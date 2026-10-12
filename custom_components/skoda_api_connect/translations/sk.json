@@ -136,6 +136,9 @@
       "plugged_in": {
         "name": "Nabíjací kábel"
       },
+      "plug_lock": {
+        "name": "Zámok nabíjacieho kábla"
+      },
       "vehicle_in_saved_location": {
         "name": "Na uloženej nabíjacej lokalite"
       },

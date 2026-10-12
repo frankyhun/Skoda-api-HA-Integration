@@ -136,6 +136,9 @@
       "plugged_in": {
         "name": "Laadkabel"
       },
+      "plug_lock": {
+        "name": "Vergrendeling laadkabel"
+      },
       "vehicle_in_saved_location": {
         "name": "Bij opgeslagen laadlocatie"
       },

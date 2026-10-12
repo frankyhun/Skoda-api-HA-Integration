@@ -106,6 +106,13 @@ BINARY_SENSOR_DESCRIPTIONS: tuple[SkodaBinarySensorEntityDescription, ...] = (
         exists_fn=_reported("charging", "status", "plugConnectionState"),
     ),
     SkodaBinarySensorEntityDescription(
+        key="plug_lock",
+        translation_key="plug_lock",
+        device_class=BinarySensorDeviceClass.LOCK,
+        value_fn=_is("charging", "status", "plugLockState", value="UNLOCKED"),
+        exists_fn=_reported("charging", "status", "plugLockState"),
+    ),
+    SkodaBinarySensorEntityDescription(
         key="vehicle_in_saved_location",
         translation_key="vehicle_in_saved_location",
         icon="mdi:home-map-marker",

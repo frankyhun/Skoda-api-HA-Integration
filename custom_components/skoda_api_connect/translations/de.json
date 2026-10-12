@@ -136,6 +136,9 @@
       "plugged_in": {
         "name": "Ladekabel"
       },
+      "plug_lock": {
+        "name": "Ladekabel-Verriegelung"
+      },
       "vehicle_in_saved_location": {
         "name": "An gespeichertem Ladestandort"
       },

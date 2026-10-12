@@ -136,6 +136,9 @@
       "plugged_in": {
         "name": "Câble de charge"
       },
+      "plug_lock": {
+        "name": "Verrouillage du câble de charge"
+      },
       "vehicle_in_saved_location": {
         "name": "Sur un lieu de charge enregistré"
       },

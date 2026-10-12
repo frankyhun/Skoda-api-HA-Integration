@@ -19,7 +19,7 @@ an options flow, reauthentication support, and a diagnostics download.
 | Platform | Entities |
 |---|---|
 | `sensor` | Battery level, charging power, charge limit (read-only), charging rate, remaining charging time, battery/total range, fuel level, AdBlue range, mileage, target temperature, address of the parking position, name of the charging location profile currently active, API status (result of the last poll, diagnostic), last poll (date and time of the last successful poll, diagnostic), rate limit until (when the request quota is available again after a rate limit, diagnostic), API requests remaining (left of the hourly quota according to the last response, with the attributes `limit` and `reset_at`, diagnostic) |
-| `binary_sensor` | Doors, windows, trunk, bonnet, lights, central locking, charging, charging cable plugged in, vehicle at saved charging location |
+| `binary_sensor` | Doors, windows, trunk, bonnet, lights, central locking, charging, charging cable plugged in, charging cable lock, vehicle at saved charging location |
 | `device_tracker` | Parking position (shows on the Map dashboard; unknown while driving) |
 | `climate` | Remote air conditioning (on/off, active ventilation, target temperature) |
 | `switch` | Start/stop charging |
