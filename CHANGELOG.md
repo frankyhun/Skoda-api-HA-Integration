@@ -7,6 +7,8 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0]
+
 ### Added
 
 - Binary sensor "Charging cable lock" for the new `plugLockState` field of API 1.1.0 (on = unlocked).

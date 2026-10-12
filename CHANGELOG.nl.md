@@ -7,6 +7,8 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+## [0.2.0]
+
 ### Toegevoegd
 
 - Binaire sensor "Vergrendeling laadkabel" voor het nieuwe veld `plugLockState` van API 1.1.0 (aan = ontgrendeld).
