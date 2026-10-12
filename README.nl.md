@@ -57,6 +57,8 @@ Ook deze documentatie is beschikbaar in het [Engels](README.md), het
 
 ### HACS (aanbevolen)
 
+[![Open your Home Assistant instance and open this repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=olafkenfenheuer&repository=Skoda-api-HA-Integration&category=integration)
+
 1. Ga in HACS naar **Integraties** → menu (⋮) → **Aangepaste repositories**.
 2. Voeg de URL van deze repository toe
    (`https://github.com/olafkenfenheuer/Skoda-api-HA-Integration`) met categorie **Integration**.
