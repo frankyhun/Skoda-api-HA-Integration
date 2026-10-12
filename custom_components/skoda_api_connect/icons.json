@@ -1,0 +1,38 @@
+{
+  "entity": {
+    "sensor": {
+      "mileage": {
+        "default": "mdi:counter"
+      },
+      "charging_rate": {
+        "default": "mdi:speedometer"
+      }
+    },
+    "binary_sensor": {
+      "trunk_open": {
+        "default": "mdi:car-back"
+      },
+      "bonnet_open": {
+        "default": "mdi:car-wrench"
+      }
+    },
+    "number": {
+      "poll_interval_idle": {
+        "default": "mdi:timer-outline"
+      },
+      "poll_interval_charging": {
+        "default": "mdi:clock-fast"
+      }
+    },
+    "button": {
+      "refresh": {
+        "default": "mdi:refresh"
+      }
+    },
+    "switch": {
+      "poll_when_plugged_in": {
+        "default": "mdi:power-plug-battery"
+      }
+    }
+  }
+}

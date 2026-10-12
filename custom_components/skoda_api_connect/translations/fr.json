@@ -1,0 +1,186 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connecter votre compte Škoda",
+        "description": "Créez une clé API dans l'application MyŠkoda ({api_keys_url}) et saisissez-la avec le VIN de chaque véhicule concerné (séparez plusieurs VIN par des virgules).",
+        "data": {
+          "api_key": "Clé API",
+          "vins": "VIN"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Mettre à jour la clé API Škoda API Connect",
+        "description": "Votre clé API est invalide ou a expiré. Créez-en une nouvelle dans l'application MyŠkoda ({api_keys_url}) et saisissez-la avec le(s) VIN de vos véhicules.",
+        "data": {
+          "api_key": "Clé API",
+          "vins": "VIN"
+        }
+      },
+      "reconfigure": {
+        "title": "Modifier la clé API Škoda API Connect",
+        "description": "Saisissez une nouvelle clé API de l'application MyŠkoda ({api_keys_url}), par exemple avant l'expiration de l'actuelle. Vous pouvez aussi modifier le(s) VIN.",
+        "data": {
+          "api_key": "Clé API",
+          "vins": "VIN"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "La clé API est invalide, expirée ou non autorisée pour ce véhicule.",
+      "invalid_vin": "Saisissez des VIN valides de 17 caractères, séparés par des virgules.",
+      "cannot_connect": "Impossible de se connecter à Škoda API Connect. Veuillez réessayer plus tard.",
+      "rate_limited": "La limite de requêtes de l'API Škoda API Connect est atteinte. Veuillez patienter avant de réessayer.",
+      "already_configured": "Cette sélection de véhicules est déjà configurée dans une autre entrée."
+    },
+    "abort": {
+      "already_configured": "Cette sélection de véhicules est déjà configurée.",
+      "reauth_successful": "La réauthentification a réussi.",
+      "reconfigure_successful": "La reconfiguration a réussi."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options Škoda API Connect",
+        "data": {
+          "scan_interval": "Intervalle d'interrogation (minutes)",
+          "charging_scan_interval": "Intervalle d'interrogation pendant la charge (minutes)",
+          "plugged_in_fast_polling": "Utiliser l'intervalle de charge dès que le câble est branché",
+          "read_only": "Mode lecture seule (désactive toutes les commandes à distance)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_level": {
+        "name": "Niveau de batterie"
+      },
+      "charge_power": {
+        "name": "Puissance de charge"
+      },
+      "charge_limit": {
+        "name": "Limite de charge"
+      },
+      "charging_rate": {
+        "name": "Vitesse de charge"
+      },
+      "remaining_charging_time": {
+        "name": "Temps de charge restant"
+      },
+      "battery_range": {
+        "name": "Autonomie batterie"
+      },
+      "total_range": {
+        "name": "Autonomie totale"
+      },
+      "fuel_level": {
+        "name": "Niveau de carburant"
+      },
+      "ad_blue_range": {
+        "name": "Autonomie AdBlue"
+      },
+      "mileage": {
+        "name": "Kilométrage"
+      },
+      "target_temperature": {
+        "name": "Température cible"
+      },
+      "location_address": {
+        "name": "Adresse"
+      },
+      "charging_location_profile": {
+        "name": "Lieu de charge"
+      },
+      "api_status": {
+        "name": "État de l'API",
+        "state": {
+          "ok": "OK",
+          "partial": "Partiellement disponible",
+          "auth_error": "Clé API refusée",
+          "rate_limited": "Limite atteinte",
+          "connection_error": "Erreur de connexion",
+          "api_error": "Erreur de l'API"
+        }
+      },
+      "last_poll": {
+        "name": "Dernière interrogation"
+      },
+      "rate_limit_until": {
+        "name": "Limite de requêtes jusqu'à"
+      },
+      "api_requests_remaining": {
+        "name": "Requêtes API restantes"
+      }
+    },
+    "binary_sensor": {
+      "doors_open": {
+        "name": "Portes"
+      },
+      "windows_open": {
+        "name": "Fenêtres"
+      },
+      "trunk_open": {
+        "name": "Coffre"
+      },
+      "bonnet_open": {
+        "name": "Capot"
+      },
+      "lights_on": {
+        "name": "Éclairage"
+      },
+      "charging": {
+        "name": "En charge"
+      },
+      "plugged_in": {
+        "name": "Câble de charge"
+      },
+      "vehicle_in_saved_location": {
+        "name": "Sur un lieu de charge enregistré"
+      },
+      "unlocked": {
+        "name": "Verrouillage centralisé"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "Interroger l'API maintenant"
+      }
+    },
+    "device_tracker": {
+      "vehicle_location": {
+        "name": "Localisation"
+      }
+    },
+    "climate": {
+      "air_conditioning": {
+        "name": "Climatisation"
+      }
+    },
+    "switch": {
+      "charging": {
+        "name": "Charge"
+      },
+      "poll_when_plugged_in": {
+        "name": "Interrogation rapide quand branché"
+      }
+    },
+    "number": {
+      "charge_limit": {
+        "name": "Limite de charge"
+      },
+      "poll_interval_idle": {
+        "name": "Intervalle d'interrogation"
+      },
+      "poll_interval_charging": {
+        "name": "Intervalle d'interrogation pendant la charge"
+      }
+    },
+    "select": {
+      "charge_mode": {
+        "name": "Mode de charge"
+      }
+    }
+  }
+}

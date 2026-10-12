@@ -1,0 +1,186 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Připojení účtu Škoda",
+        "description": "Vytvořte v aplikaci MyŠkoda klíč API ({api_keys_url}) a zadejte ho spolu s VIN každého vozidla, pro které byl vytvořen (více VIN oddělte čárkami).",
+        "data": {
+          "api_key": "Klíč API",
+          "vins": "VIN"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Aktualizace klíče API Škoda API Connect",
+        "description": "Váš klíč API je neplatný nebo vypršel. Vytvořte nový v aplikaci MyŠkoda ({api_keys_url}) a zadejte ho spolu s VIN svých vozidel.",
+        "data": {
+          "api_key": "Klíč API",
+          "vins": "VIN"
+        }
+      },
+      "reconfigure": {
+        "title": "Změna klíče API Škoda API Connect",
+        "description": "Zadejte nový klíč API z aplikace MyŠkoda ({api_keys_url}), např. před vypršením stávajícího. Můžete změnit i VIN.",
+        "data": {
+          "api_key": "Klíč API",
+          "vins": "VIN"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Klíč API je neplatný, vypršel nebo nemá oprávnění pro toto vozidlo.",
+      "invalid_vin": "Zadejte platné 17místné VIN oddělené čárkami.",
+      "cannot_connect": "Nepodařilo se připojit ke Škoda API Connect. Zkuste to prosím později.",
+      "rate_limited": "Byl dosažen limit požadavků API Škoda API Connect. Chvíli počkejte a zkuste to znovu.",
+      "already_configured": "Tento výběr vozidel je již nakonfigurován v jiném záznamu."
+    },
+    "abort": {
+      "already_configured": "Tento výběr vozidel je již nakonfigurován.",
+      "reauth_successful": "Opětovné ověření proběhlo úspěšně.",
+      "reconfigure_successful": "Překonfigurování proběhlo úspěšně."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Možnosti Škoda API Connect",
+        "data": {
+          "scan_interval": "Interval dotazování (minuty)",
+          "charging_scan_interval": "Interval dotazování při nabíjení (minuty)",
+          "plugged_in_fast_polling": "Použít interval nabíjení i při zapojeném kabelu",
+          "read_only": "Režim pouze pro čtení (vypne veškeré dálkové ovládání)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_level": {
+        "name": "Stav baterie"
+      },
+      "charge_power": {
+        "name": "Nabíjecí výkon"
+      },
+      "charge_limit": {
+        "name": "Limit nabití"
+      },
+      "charging_rate": {
+        "name": "Rychlost nabíjení"
+      },
+      "remaining_charging_time": {
+        "name": "Zbývající doba nabíjení"
+      },
+      "battery_range": {
+        "name": "Dojezd na baterii"
+      },
+      "total_range": {
+        "name": "Celkový dojezd"
+      },
+      "fuel_level": {
+        "name": "Stav paliva"
+      },
+      "ad_blue_range": {
+        "name": "Dojezd AdBlue"
+      },
+      "mileage": {
+        "name": "Stav tachometru"
+      },
+      "target_temperature": {
+        "name": "Cílová teplota"
+      },
+      "location_address": {
+        "name": "Adresa"
+      },
+      "charging_location_profile": {
+        "name": "Místo nabíjení"
+      },
+      "api_status": {
+        "name": "Stav API",
+        "state": {
+          "ok": "OK",
+          "partial": "Částečně dostupné",
+          "auth_error": "Klíč API odmítnut",
+          "rate_limited": "Dosažen limit",
+          "connection_error": "Chyba připojení",
+          "api_error": "Chyba API"
+        }
+      },
+      "last_poll": {
+        "name": "Poslední dotaz"
+      },
+      "rate_limit_until": {
+        "name": "Limit požadavků do"
+      },
+      "api_requests_remaining": {
+        "name": "Zbývající požadavky API"
+      }
+    },
+    "binary_sensor": {
+      "doors_open": {
+        "name": "Dveře"
+      },
+      "windows_open": {
+        "name": "Okna"
+      },
+      "trunk_open": {
+        "name": "Kufr"
+      },
+      "bonnet_open": {
+        "name": "Kapota"
+      },
+      "lights_on": {
+        "name": "Světla"
+      },
+      "charging": {
+        "name": "Nabíjí se"
+      },
+      "plugged_in": {
+        "name": "Nabíjecí kabel"
+      },
+      "vehicle_in_saved_location": {
+        "name": "Na uložené nabíjecí lokaci"
+      },
+      "unlocked": {
+        "name": "Centrální zamykání"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "Dotázat se API nyní"
+      }
+    },
+    "device_tracker": {
+      "vehicle_location": {
+        "name": "Poloha"
+      }
+    },
+    "climate": {
+      "air_conditioning": {
+        "name": "Klimatizace"
+      }
+    },
+    "switch": {
+      "charging": {
+        "name": "Nabíjení"
+      },
+      "poll_when_plugged_in": {
+        "name": "Rychlé dotazování při zapojeném kabelu"
+      }
+    },
+    "number": {
+      "charge_limit": {
+        "name": "Limit nabití"
+      },
+      "poll_interval_idle": {
+        "name": "Interval dotazování"
+      },
+      "poll_interval_charging": {
+        "name": "Interval dotazování při nabíjení"
+      }
+    },
+    "select": {
+      "charge_mode": {
+        "name": "Režim nabíjení"
+      }
+    }
+  }
+}

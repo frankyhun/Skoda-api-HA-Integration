@@ -1,0 +1,186 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect your Škoda account",
+        "description": "Create an API key in the MyŠkoda app ({api_keys_url}) and enter it together with the VIN of each vehicle it was created for (separate several VINs with commas).",
+        "data": {
+          "api_key": "API key",
+          "vins": "VIN(s)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Update the Škoda API key",
+        "description": "Your API key is invalid or has expired. Create a new one in the MyŠkoda app ({api_keys_url}) and enter it with the VIN(s) of your vehicle(s).",
+        "data": {
+          "api_key": "API key",
+          "vins": "VIN(s)"
+        }
+      },
+      "reconfigure": {
+        "title": "Change the Škoda API key",
+        "description": "Enter a new API key from the MyŠkoda app ({api_keys_url}), e.g. before the current one expires. You can also change the VIN(s).",
+        "data": {
+          "api_key": "API key",
+          "vins": "VIN(s)"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "The API key is invalid, expired or not authorized for this vehicle.",
+      "invalid_vin": "Enter valid 17-character VINs, separated by commas.",
+      "cannot_connect": "Could not connect to Škoda API Connect. Please try again later.",
+      "rate_limited": "Škoda API rate limit reached. Please wait a while before trying again.",
+      "already_configured": "This vehicle selection is already configured by another entry."
+    },
+    "abort": {
+      "already_configured": "This vehicle selection is already configured.",
+      "reauth_successful": "Reauthentication was successful.",
+      "reconfigure_successful": "Reconfiguration was successful."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Škoda API Connect options",
+        "data": {
+          "scan_interval": "Polling interval (minutes)",
+          "charging_scan_interval": "Polling interval while charging (minutes)",
+          "plugged_in_fast_polling": "Use the charging interval while the cable is plugged in",
+          "read_only": "Read-only mode (disable all remote controls)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_level": {
+        "name": "Battery level"
+      },
+      "charge_power": {
+        "name": "Charging power"
+      },
+      "charge_limit": {
+        "name": "Charge limit"
+      },
+      "charging_rate": {
+        "name": "Charging rate"
+      },
+      "remaining_charging_time": {
+        "name": "Remaining charging time"
+      },
+      "battery_range": {
+        "name": "Battery range"
+      },
+      "total_range": {
+        "name": "Total range"
+      },
+      "fuel_level": {
+        "name": "Fuel level"
+      },
+      "ad_blue_range": {
+        "name": "AdBlue range"
+      },
+      "mileage": {
+        "name": "Mileage"
+      },
+      "target_temperature": {
+        "name": "Target temperature"
+      },
+      "location_address": {
+        "name": "Address"
+      },
+      "charging_location_profile": {
+        "name": "Charging location"
+      },
+      "api_status": {
+        "name": "API status",
+        "state": {
+          "ok": "OK",
+          "partial": "Partially available",
+          "auth_error": "API key rejected",
+          "rate_limited": "Rate limit reached",
+          "connection_error": "Connection error",
+          "api_error": "API error"
+        }
+      },
+      "last_poll": {
+        "name": "Last poll"
+      },
+      "rate_limit_until": {
+        "name": "Rate limit until"
+      },
+      "api_requests_remaining": {
+        "name": "API requests remaining"
+      }
+    },
+    "binary_sensor": {
+      "doors_open": {
+        "name": "Doors"
+      },
+      "windows_open": {
+        "name": "Windows"
+      },
+      "trunk_open": {
+        "name": "Trunk"
+      },
+      "bonnet_open": {
+        "name": "Bonnet"
+      },
+      "lights_on": {
+        "name": "Lights"
+      },
+      "charging": {
+        "name": "Charging"
+      },
+      "plugged_in": {
+        "name": "Charging cable"
+      },
+      "vehicle_in_saved_location": {
+        "name": "At saved charging location"
+      },
+      "unlocked": {
+        "name": "Central locking"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "Poll API now"
+      }
+    },
+    "device_tracker": {
+      "vehicle_location": {
+        "name": "Location"
+      }
+    },
+    "climate": {
+      "air_conditioning": {
+        "name": "Air conditioning"
+      }
+    },
+    "switch": {
+      "charging": {
+        "name": "Charging"
+      },
+      "poll_when_plugged_in": {
+        "name": "Fast polling while plugged in"
+      }
+    },
+    "number": {
+      "charge_limit": {
+        "name": "Charge limit"
+      },
+      "poll_interval_idle": {
+        "name": "Polling interval"
+      },
+      "poll_interval_charging": {
+        "name": "Polling interval while charging"
+      }
+    },
+    "select": {
+      "charge_mode": {
+        "name": "Charge mode"
+      }
+    }
+  }
+}

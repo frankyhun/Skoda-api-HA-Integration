@@ -1,0 +1,186 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Je Škoda-account koppelen",
+        "description": "Maak in de MyŠkoda-app een API-sleutel aan ({api_keys_url}) en voer deze in samen met het VIN van elk voertuig waarvoor hij is aangemaakt (meerdere VIN's scheiden met komma's).",
+        "data": {
+          "api_key": "API-sleutel",
+          "vins": "VIN(s)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Škoda API-sleutel vernieuwen",
+        "description": "Je API-sleutel is ongeldig of verlopen. Maak een nieuwe aan in de MyŠkoda-app ({api_keys_url}) en voer hem in met het/de VIN(s) van je voertuig(en).",
+        "data": {
+          "api_key": "API-sleutel",
+          "vins": "VIN(s)"
+        }
+      },
+      "reconfigure": {
+        "title": "Škoda API-sleutel wijzigen",
+        "description": "Voer een nieuwe API-sleutel uit de MyŠkoda-app in ({api_keys_url}), bijvoorbeeld voordat de huidige verloopt. Je kunt ook het/de VIN(s) wijzigen.",
+        "data": {
+          "api_key": "API-sleutel",
+          "vins": "VIN(s)"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "De API-sleutel is ongeldig, verlopen of niet gemachtigd voor dit voertuig.",
+      "invalid_vin": "Voer geldige VIN's van 17 tekens in, gescheiden door komma's.",
+      "cannot_connect": "Kan geen verbinding maken met Škoda API Connect. Probeer het later opnieuw.",
+      "rate_limited": "De limiet van de Škoda API is bereikt. Wacht even voordat je het opnieuw probeert.",
+      "already_configured": "Deze voertuigselectie is al geconfigureerd in een andere invoer."
+    },
+    "abort": {
+      "already_configured": "Deze voertuigselectie is al geconfigureerd.",
+      "reauth_successful": "Opnieuw verifiëren is gelukt.",
+      "reconfigure_successful": "Herconfiguratie is gelukt."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Škoda API Connect-opties",
+        "data": {
+          "scan_interval": "Pollinginterval (minuten)",
+          "charging_scan_interval": "Pollinginterval tijdens laden (minuten)",
+          "plugged_in_fast_polling": "Laadinterval ook gebruiken zolang de laadkabel is aangesloten",
+          "read_only": "Alleen-lezen modus (alle bedieningsfuncties uitschakelen)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_level": {
+        "name": "Batterijniveau"
+      },
+      "charge_power": {
+        "name": "Laadvermogen"
+      },
+      "charge_limit": {
+        "name": "Laadlimiet"
+      },
+      "charging_rate": {
+        "name": "Laadsnelheid"
+      },
+      "remaining_charging_time": {
+        "name": "Resterende laadtijd"
+      },
+      "battery_range": {
+        "name": "Actieradius batterij"
+      },
+      "total_range": {
+        "name": "Totale actieradius"
+      },
+      "fuel_level": {
+        "name": "Brandstofniveau"
+      },
+      "ad_blue_range": {
+        "name": "AdBlue-bereik"
+      },
+      "mileage": {
+        "name": "Kilometerstand"
+      },
+      "target_temperature": {
+        "name": "Doeltemperatuur"
+      },
+      "location_address": {
+        "name": "Adres"
+      },
+      "charging_location_profile": {
+        "name": "Laadlocatie"
+      },
+      "api_status": {
+        "name": "API-status",
+        "state": {
+          "ok": "OK",
+          "partial": "Gedeeltelijk beschikbaar",
+          "auth_error": "API-sleutel geweigerd",
+          "rate_limited": "Limiet bereikt",
+          "connection_error": "Verbindingsfout",
+          "api_error": "API-fout"
+        }
+      },
+      "last_poll": {
+        "name": "Laatste poll"
+      },
+      "rate_limit_until": {
+        "name": "Rate limit tot"
+      },
+      "api_requests_remaining": {
+        "name": "Resterende API-verzoeken"
+      }
+    },
+    "binary_sensor": {
+      "doors_open": {
+        "name": "Portieren"
+      },
+      "windows_open": {
+        "name": "Ramen"
+      },
+      "trunk_open": {
+        "name": "Kofferbak"
+      },
+      "bonnet_open": {
+        "name": "Motorkap"
+      },
+      "lights_on": {
+        "name": "Verlichting"
+      },
+      "charging": {
+        "name": "Aan het laden"
+      },
+      "plugged_in": {
+        "name": "Laadkabel"
+      },
+      "vehicle_in_saved_location": {
+        "name": "Bij opgeslagen laadlocatie"
+      },
+      "unlocked": {
+        "name": "Centrale vergrendeling"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "API nu opvragen"
+      }
+    },
+    "device_tracker": {
+      "vehicle_location": {
+        "name": "Locatie"
+      }
+    },
+    "climate": {
+      "air_conditioning": {
+        "name": "Airconditioning"
+      }
+    },
+    "switch": {
+      "charging": {
+        "name": "Laden"
+      },
+      "poll_when_plugged_in": {
+        "name": "Snel pollen als kabel is aangesloten"
+      }
+    },
+    "number": {
+      "charge_limit": {
+        "name": "Laadlimiet"
+      },
+      "poll_interval_idle": {
+        "name": "Pollinginterval"
+      },
+      "poll_interval_charging": {
+        "name": "Pollinginterval tijdens laden"
+      }
+    },
+    "select": {
+      "charge_mode": {
+        "name": "Laadmodus"
+      }
+    }
+  }
+}

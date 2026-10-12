@@ -1,0 +1,16 @@
+{
+  "domain": "skoda_api_connect",
+  "name": "Škoda API Connect",
+  "codeowners": [
+    "@olafkenfenheuer"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/olafkenfenheuer/Skoda-api-HA-Integration",
+  "integration_type": "device",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/olafkenfenheuer/Skoda-api-HA-Integration/issues",
+  "loggers": [],
+  "requirements": [],
+  "version": "0.1.0"
+}

@@ -1,0 +1,186 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Škoda-Konto verbinden",
+        "description": "Erstelle in der MyŠkoda-App einen API-Schlüssel ({api_keys_url}) und gib ihn zusammen mit der FIN/VIN jedes Fahrzeugs ein, für das er erstellt wurde (mehrere VINs durch Komma trennen).",
+        "data": {
+          "api_key": "API-Schlüssel",
+          "vins": "VIN(s)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Škoda API-Schlüssel aktualisieren",
+        "description": "Dein API-Schlüssel ist ungültig oder abgelaufen. Erstelle einen neuen in der MyŠkoda-App ({api_keys_url}) und gib ihn zusammen mit der/den VIN(s) deiner Fahrzeuge ein.",
+        "data": {
+          "api_key": "API-Schlüssel",
+          "vins": "VIN(s)"
+        }
+      },
+      "reconfigure": {
+        "title": "Škoda API-Schlüssel ändern",
+        "description": "Gib einen neuen API-Schlüssel aus der MyŠkoda-App ein ({api_keys_url}), z. B. bevor der aktuelle abläuft. Auch die VIN(s) können geändert werden.",
+        "data": {
+          "api_key": "API-Schlüssel",
+          "vins": "VIN(s)"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Der API-Schlüssel ist ungültig, abgelaufen oder für dieses Fahrzeug nicht berechtigt.",
+      "invalid_vin": "Gib gültige 17-stellige VINs ein, durch Komma getrennt.",
+      "cannot_connect": "Verbindung zu Škoda API Connect nicht möglich. Bitte später erneut versuchen.",
+      "rate_limited": "Das Ratenlimit der Škoda API wurde erreicht. Bitte warte eine Weile, bevor du es erneut versuchst.",
+      "already_configured": "Diese Fahrzeugauswahl ist bereits in einem anderen Eintrag konfiguriert."
+    },
+    "abort": {
+      "already_configured": "Diese Fahrzeugauswahl ist bereits konfiguriert.",
+      "reauth_successful": "Die erneute Authentifizierung war erfolgreich.",
+      "reconfigure_successful": "Die Neukonfiguration war erfolgreich."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Škoda API Connect-Optionen",
+        "data": {
+          "scan_interval": "Abfrageintervall (Minuten)",
+          "charging_scan_interval": "Abfrageintervall beim Laden (Minuten)",
+          "plugged_in_fast_polling": "Ladeintervall auch bei eingestecktem Ladekabel verwenden",
+          "read_only": "Nur-Lese-Modus (alle Fernsteuerungen deaktivieren)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_level": {
+        "name": "Batteriestand"
+      },
+      "charge_power": {
+        "name": "Ladeleistung"
+      },
+      "charge_limit": {
+        "name": "Ladegrenze"
+      },
+      "charging_rate": {
+        "name": "Laderate"
+      },
+      "remaining_charging_time": {
+        "name": "Verbleibende Ladezeit"
+      },
+      "battery_range": {
+        "name": "Reichweite Batterie"
+      },
+      "total_range": {
+        "name": "Gesamtreichweite"
+      },
+      "fuel_level": {
+        "name": "Kraftstoffstand"
+      },
+      "ad_blue_range": {
+        "name": "AdBlue-Reichweite"
+      },
+      "mileage": {
+        "name": "Kilometerstand"
+      },
+      "target_temperature": {
+        "name": "Zieltemperatur"
+      },
+      "location_address": {
+        "name": "Adresse"
+      },
+      "charging_location_profile": {
+        "name": "Ladestandort"
+      },
+      "api_status": {
+        "name": "API-Status",
+        "state": {
+          "ok": "OK",
+          "partial": "Teilweise verfügbar",
+          "auth_error": "API-Schlüssel abgelehnt",
+          "rate_limited": "Limit erreicht",
+          "connection_error": "Verbindungsfehler",
+          "api_error": "API-Fehler"
+        }
+      },
+      "last_poll": {
+        "name": "Letzter Abruf"
+      },
+      "rate_limit_until": {
+        "name": "Rate-Limit bis"
+      },
+      "api_requests_remaining": {
+        "name": "Verbleibende API-Anfragen"
+      }
+    },
+    "binary_sensor": {
+      "doors_open": {
+        "name": "Türen"
+      },
+      "windows_open": {
+        "name": "Fenster"
+      },
+      "trunk_open": {
+        "name": "Kofferraum"
+      },
+      "bonnet_open": {
+        "name": "Motorhaube"
+      },
+      "lights_on": {
+        "name": "Beleuchtung"
+      },
+      "charging": {
+        "name": "Lädt"
+      },
+      "plugged_in": {
+        "name": "Ladekabel"
+      },
+      "vehicle_in_saved_location": {
+        "name": "An gespeichertem Ladestandort"
+      },
+      "unlocked": {
+        "name": "Zentralverriegelung"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "API jetzt abrufen"
+      }
+    },
+    "device_tracker": {
+      "vehicle_location": {
+        "name": "Standort"
+      }
+    },
+    "climate": {
+      "air_conditioning": {
+        "name": "Klimaanlage"
+      }
+    },
+    "switch": {
+      "charging": {
+        "name": "Laden"
+      },
+      "poll_when_plugged_in": {
+        "name": "Wenn eingesteckt schnell abfragen"
+      }
+    },
+    "number": {
+      "charge_limit": {
+        "name": "Ladegrenze"
+      },
+      "poll_interval_idle": {
+        "name": "Abfrageintervall"
+      },
+      "poll_interval_charging": {
+        "name": "Abfrageintervall beim Laden"
+      }
+    },
+    "select": {
+      "charge_mode": {
+        "name": "Lademodus"
+      }
+    }
+  }
+}
