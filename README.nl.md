@@ -59,6 +59,12 @@ Ook deze documentatie is beschikbaar in het [Engels](README.md), het
 
 [![Open your Home Assistant instance and open this repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=olafkenfenheuer&repository=Skoda-api-HA-Integration&category=integration)
 
+1. Zoek in HACS naar "Škoda API Connect", klik op **Downloaden** en installeer de integratie.
+2. Herstart Home Assistant.
+
+Staat ze niet in de zoekresultaten (bijvoorbeeld omdat HACS de standaardlijst nog niet heeft
+vernieuwd, of je wilt een pre-release uitproberen), voeg ze dan als aangepaste repository toe:
+
 1. Ga in HACS naar **Integraties** → menu (⋮) → **Aangepaste repositories**.
 2. Voeg de URL van deze repository toe
    (`https://github.com/olafkenfenheuer/Skoda-api-HA-Integration`) met categorie **Integration**.

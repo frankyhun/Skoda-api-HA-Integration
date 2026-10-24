@@ -64,6 +64,12 @@ This documentation itself is available in [English](README.md),
 
 [![Open your Home Assistant instance and open this repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=olafkenfenheuer&repository=Skoda-api-HA-Integration&category=integration)
 
+1. In HACS, search for "Škoda API Connect", click **Download**, and install it.
+2. Restart Home Assistant.
+
+If it does not show up in the search (e.g. your HACS has not refreshed the default list yet, or you
+want to try a pre-release), add it as a custom repository instead:
+
 1. In HACS, go to **Integrations** → menu (⋮) → **Custom repositories**.
 2. Add this repository URL (`https://github.com/olafkenfenheuer/Skoda-api-HA-Integration`) with
    category **Integration**.
