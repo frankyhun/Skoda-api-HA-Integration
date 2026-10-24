@@ -7,6 +7,12 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.1]
+
+### Fixed
+
+- Diagnostics no longer contain VINs (per-vehicle polling options are now listed as `vehicle_1`, `vehicle_2`, ...) or the vehicle name.
+
 ## [0.2.0]
 
 ### Added
