@@ -27,6 +27,11 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 - Sensor "Laatste voertuiggegevens": wanneer het voertuig zelf voor het laatst gegevens naar de Škoda-servers stuurde (nieuwste `carCapturedTimestamp`), met de tijdstempel per onderdeel als attributen. In tegenstelling tot "Laatste poll" laat dit zien wanneer de verbinding tussen auto en servers onderbroken was.
 - Knop "Voertuig wakker maken": de API heeft geen wake-up-aanroep, dus de knop stuurt de huidige laadmodus opnieuw (een commando dat niets verandert maar het voertuig moet bereiken), waardoor een slapend voertuig zich meldt. Kost twee verzoeken van het API-quotum.
 - Number "Ladend voertuig wekken na (0 = uit)" (configuratiecategorie, standaard uit): als een voertuig laadt en zoveel minuten (stappen van 5, minimaal 10) geen gegevens heeft gemeld, wordt het op dezelfde manier gewekt. Overgeslagen tijdens een rate-limitpauze en als er minder dan 6 verzoeken van het uurquotum over zijn; nooit vaker dan de ingestelde tijd.
+- Spaanse en Luxemburgse vertalingen (met dank aan janreimen), inclusief de entiteiten voor het wekken.
+
+### Opgelost
+
+- De Luxemburgse vertaling heet nu `lb.json`; Home Assistant gebruikt de taalcode `lb`, dus `lu.json` werd nooit geladen.
 
 ## [0.2.1]
 

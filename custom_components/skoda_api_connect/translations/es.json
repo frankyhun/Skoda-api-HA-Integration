@@ -123,6 +123,9 @@
       "last_poll": {
         "name": "Última consulta"
       },
+      "car_last_seen": {
+        "name": "Últimos datos del vehículo"
+      },
       "rate_limit_until": {
         "name": "Límite de solicitudes hasta"
       },
@@ -173,6 +176,9 @@
     "button": {
       "refresh": {
         "name": "Consultar API ahora"
+      },
+      "wake": {
+        "name": "Despertar vehículo"
       }
     },
     "device_tracker": {
@@ -202,6 +208,9 @@
       },
       "poll_interval_charging": {
         "name": "Intervalo de consulta durante la carga"
+      },
+      "auto_wake": {
+        "name": "Despertar vehículo en carga tras (0 = desactivado)"
       },
       "parking_alert_grace": {
         "name": "Tiempo de espera de la alerta de aparcamiento"

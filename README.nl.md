@@ -31,7 +31,7 @@ zetten.
 ### Wat de publieke API niet biedt
 
 Deze integratie gebruikt uitsluitend de publieke MyŠkoda-API. Vergrendelen/ontgrendelen,
-toeteren & knipperen, voertuig wakker maken, ruitverwarming, accuzorgmodus, gereduceerde
+toeteren & knipperen, een echte wake-up-aanroep (de knop "Voertuig wakker maken" is slechts een omweg, zie hieronder), ruitverwarming, accuzorgmodus, gereduceerde
 laadstroom, buitentemperatuur en softwareversie zijn daarom niet mogelijk: de publieke API heeft
 daarvoor geen endpoint. De vergrendeling is een alleen-lezen `binary_sensor`.
 
@@ -45,6 +45,8 @@ De integratie bevat vertalingen voor de config flow, de opties-flow en de entite
 - Français (`fr`)
 - Čeština (`cs`)
 - Slovenčina (`sk`)
+- Español (`es`)
+- Lëtzebuergesch (`lb`)
 
 Home Assistant kiest automatisch de vertaling die overeenkomt met de taalinstelling van je
 installatie, met Engels als terugvaloptie. Bijdragen voor extra talen zijn welkom — voeg een

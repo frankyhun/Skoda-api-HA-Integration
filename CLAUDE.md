@@ -20,7 +20,7 @@ Default branch: `main`. Unofficial project - not affiliated with Škoda Auto.
     data only, no API requests
   - `entity.py` - `SkodaVehicleEntity` base; platforms: `sensor`, `binary_sensor`, `button`, `device_tracker`,
     `climate`, `switch`, `number`, `select`; `diagnostics.py`
-  - `strings.json` is a copy of `translations/en.json`; translations exist for en/de/nl/fr/cs/sk
+  - `strings.json` is a copy of `translations/en.json`; translations exist for en/de/nl/fr/cs/sk/es/lb
   - `brand/icon.png` - icon shown by Home Assistant 2026.3+
 - `tests/` - pytest suite using `pytest-homeassistant-custom-component` (see `pytest.ini`)
 - `README.md` / `README.de.md` / `README.nl.md`, `CHANGELOG.md` / `CHANGELOG.nl.md`
@@ -63,7 +63,7 @@ python -m compileall -q custom_components           # quick syntax check
   (minutes, default 5) configure the parking alert; changing them reschedules open incidents without a
   reload. Diagnostics redact `notify_targets`.
 - Every remote control goes through `coordinator.async_command(vin, coroutine)`.
-- Changing user-facing strings: update **all six** translation files and copy `en.json` to
+- Changing user-facing strings: update **all eight** translation files and copy `en.json` to
   `strings.json`.
 - Keep READMEs and changelogs in sync (English is the source; German README, Dutch README/CHANGELOG).
   Bump `version` in `manifest.json` and add a `CHANGELOG` entry for user-visible changes.

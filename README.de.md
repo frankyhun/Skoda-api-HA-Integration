@@ -39,7 +39,7 @@ Fernsteuerungen deaktiviert und alle Sensoren aktiv lässt.
 
 Die Integration nutzt ausschließlich die öffentliche MyŠkoda-API. Folgende Funktionen sind daher
 nicht möglich, weil die öffentliche API dafür keinen Endpunkt hat: Ver-/Entriegeln, Hupen &
-Blinken, Fahrzeug aufwecken, Scheibenheizung, Batterieschonmodus, reduzierter Ladestrom,
+Blinken, ein echter Wake-up-Aufruf (der Button „Fahrzeug aufwecken" ist nur ein Umweg, siehe unten), Scheibenheizung, Batterieschonmodus, reduzierter Ladestrom,
 Außentemperatur und Softwareversion. Die Verriegelung ist ein reiner `binary_sensor`.
 
 ## Unterstützte Sprachen
@@ -53,6 +53,8 @@ Sprachen mit:
 - Français (`fr`)
 - Čeština (`cs`)
 - Slovenčina (`sk`)
+- Español (`es`)
+- Lëtzebuergesch (`lb`)
 
 Home Assistant wählt automatisch die zur Spracheinstellung deiner Instanz passende Übersetzung und
 fällt sonst auf Englisch zurück. Beiträge für weitere Sprachen sind willkommen – lege einfach eine

@@ -123,6 +123,9 @@
       "last_poll": {
         "name": "Lescht Ofro"
       },
+      "car_last_seen": {
+        "name": "Lescht Fahrzeugdaten"
+      },
       "rate_limit_until": {
         "name": "Rate-Limitt bis"
       },
@@ -173,6 +176,9 @@
     "button": {
       "refresh": {
         "name": "API elo ofruffen"
+      },
+      "wake": {
+        "name": "Fahrzeug erwächen"
       }
     },
     "device_tracker": {
@@ -202,6 +208,9 @@
       },
       "poll_interval_charging": {
         "name": "Ofrointervall beim Oplueden"
+      },
+      "auto_wake": {
+        "name": "Luedend Fahrzeug erwächen no (0 = aus)"
       },
       "parking_alert_grace": {
         "name": "Waardezäit vum Parkalarm"

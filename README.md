@@ -36,8 +36,8 @@ while keeping all sensors active.
 ### What the public API does not offer
 
 This integration uses only the public MyŠkoda API. The following are therefore not possible,
-because the public API has no endpoint for them: locking/unlocking, honk & flash, waking up the
-vehicle, window heating, battery care mode, reduced charging current, outside temperature and
+because the public API has no endpoint for them: locking/unlocking, honk & flash, a real wake-up
+call (the button "Wake vehicle" is only a workaround, see below), window heating, battery care mode, reduced charging current, outside temperature and
 software version. The lock is a read-only `binary_sensor`.
 
 ## Supported languages
@@ -50,6 +50,8 @@ The integration ships translations for its config flow, options flow, and entity
 - Français (`fr`)
 - Čeština (`cs`)
 - Slovenčina (`sk`)
+- Español (`es`)
+- Lëtzebuergesch (`lb`)
 
 Home Assistant automatically picks the translation matching your instance's language setting,
 falling back to English. Contributions for additional languages are welcome — add a new file
