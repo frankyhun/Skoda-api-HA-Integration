@@ -27,6 +27,9 @@
     "button": {
       "refresh": {
         "default": "mdi:refresh"
+      },
+      "wake": {
+        "default": "mdi:sleep-off"
       }
     },
     "switch": {

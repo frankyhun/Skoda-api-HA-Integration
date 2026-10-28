@@ -19,13 +19,13 @@ Options-Flow, Reauthentifizierung und Diagnose-Download.
 
 | Plattform | Entitäten |
 |---|---|
-| `sensor` | Batteriestand, Ladeleistung, Ladegrenze (nur lesend), Laderate, verbleibende Ladezeit, Batterie-/Gesamtreichweite, Kraftstoffstand, AdBlue-Reichweite, Kilometerstand, Zieltemperatur, Adresse der Parkposition, Name des aktuell aktiven Ladestandort-Profils, API-Status (Ergebnis der letzten Abfrage, Diagnose), Letzter Abruf (Datum und Uhrzeit des letzten erfolgreichen Abrufs, Diagnose), Rate-Limit bis (wann das Anfragekontingent nach einem Rate-Limit wieder verfügbar ist, Diagnose), Verbleibende API-Anfragen (Rest des Stundenkontingents laut letzter Antwort, mit den Attributen `limit` und `reset_at`, Diagnose) |
+| `sensor` | Batteriestand, Ladeleistung, Ladegrenze (nur lesend), Laderate, verbleibende Ladezeit, Batterie-/Gesamtreichweite, Kraftstoffstand, AdBlue-Reichweite, Kilometerstand, Zieltemperatur, Adresse der Parkposition, Name des aktuell aktiven Ladestandort-Profils, API-Status (Ergebnis der letzten Abfrage, Diagnose), Letzter Abruf (Datum und Uhrzeit des letzten erfolgreichen Abrufs, Diagnose), Letzte Fahrzeugdaten (wann das Fahrzeug selbst zuletzt Daten an die Škoda-Server gemeldet hat, Diagnose), Rate-Limit bis (wann das Anfragekontingent nach einem Rate-Limit wieder verfügbar ist, Diagnose), Verbleibende API-Anfragen (Rest des Stundenkontingents laut letzter Antwort, mit den Attributen `limit` und `reset_at`, Diagnose) |
 | `binary_sensor` | Türen, Fenster, Kofferraum, Motorhaube, Beleuchtung, Zentralverriegelung, Laden, Ladekabel angesteckt, Ladekabel-Verriegelung, Fahrzeug an gespeichertem Ladestandort |
 | `device_tracker` | Parkposition (erscheint auf dem Karten-Dashboard; während der Fahrt unbekannt) |
 | `climate` | Standklimatisierung (an/aus, aktive Belüftung, Zieltemperatur) |
 | `switch` | Laden starten/stoppen |
-| `button` | API jetzt abrufen (ruft die MyŠkoda-API für das Fahrzeug sofort ab; kostet eine Anfrage des API-Kontingents und wird bei aktivem Rate-Limit abgelehnt) |
-| `number` | Ladelimit (Ziel-Ladezustand), Abfrageintervalle pro Fahrzeug (normal / beim Laden) |
+| `button` | API jetzt abrufen (ruft die MyŠkoda-API für das Fahrzeug sofort ab; kostet eine Anfrage des API-Kontingents und wird bei aktivem Rate-Limit abgelehnt), Fahrzeug aufwecken (siehe unten) |
+| `number` | Ladelimit (Ziel-Ladezustand), Abfrageintervalle pro Fahrzeug (normal / beim Laden), automatisches Wecken eines ladenden Fahrzeugs |
 | `select` | Lademodus |
 
 Sensoren und Steuerungen werden nur für die Daten und Fernbedienungen angelegt, die dein
@@ -114,6 +114,21 @@ um die Verbindung wiederherzustellen, ohne den Verlauf der Entitäten zu verlier
 Die Integration nutzt ausschließlich die dokumentierten Endpunkte unter
 `https://public.api.connect.skoda-auto.cz/api/v1/vehicles/{vin}` und authentifiziert sich über den
 Header `X-API-Key`. Die Daten werden per Polling aktualisiert.
+
+### Fahrzeug aufwecken
+
+Das Fahrzeug meldet sich nur von Zeit zu Zeit bei den Škoda-Servern. Beim Laden kann es eine Stunde lang
+schweigen, und die Abrufe liefern dann alte Werte, obwohl sie erfolgreich sind. Der Sensor **Letzte
+Fahrzeugdaten** zeigt, wann sich das Auto zuletzt gemeldet hat; **Letzter Abruf** zeigt nur, wann die
+Integration zuletzt Daten geholt hat.
+
+Die API hat keinen Wake-up-Aufruf. Der Button **Fahrzeug aufwecken** sendet deshalb den aktuellen
+Lademodus erneut, einen Befehl, der nichts ändert, aber das Fahrzeug erreichen muss; das Fahrzeug meldet
+sich meist innerhalb einer Minute. Die Zahl **Ladendes Fahrzeug wecken nach (0 = aus)** macht das
+automatisch, solange ein Fahrzeug lädt und sich die angegebene Zahl von Minuten nicht gemeldet hat
+(standardmäßig aus, Minimum 10). Jedes Wecken verbraucht zwei Anfragen des Kontingents; es entfällt
+während einer Rate-Limit-Pause und wenn weniger als 6 Anfragen übrig sind. Beides gibt es im
+Nur-Lesen-Modus nicht.
 
 ### Abfrageintervalle pro Fahrzeug
 

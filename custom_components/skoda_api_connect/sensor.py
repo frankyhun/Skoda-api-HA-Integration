@@ -205,6 +205,7 @@ async def async_setup_entry(
                 entities.append(SkodaSensor(coordinator, vin, description))
         entities.append(SkodaApiStatusSensor(coordinator, vin))
         entities.append(SkodaLastPollSensor(coordinator, vin))
+        entities.append(SkodaCarLastSeenSensor(coordinator, vin))
         entities.append(SkodaRateLimitUntilSensor(coordinator, vin))
         entities.append(SkodaApiRequestsRemainingSensor(coordinator, vin))
     async_add_entities(entities)
@@ -314,6 +315,41 @@ class SkodaLastPollSensor(SkodaVehicleEntity, SensorEntity):
         """Return the time of the last attempt, which differs after a failed poll."""
         result = self.coordinator.poll_results.get(self.vin)
         return {"last_attempt": result.time} if result else {}
+
+
+class SkodaCarLastSeenSensor(SkodaVehicleEntity, SensorEntity):
+    """Shows when the vehicle last reported data to the Škoda servers (a date and time)."""
+
+    _attr_translation_key = "car_last_seen"
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_icon = "mdi:car-connected"
+
+    def __init__(self, coordinator: SkodaDataUpdateCoordinator, vin: str) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, vin)
+        self._attr_unique_id = f"{vin}_car_last_seen"
+
+    @property
+    def available(self) -> bool:
+        """Stay available while polling fails, so the age of the data stays visible."""
+        return True
+
+    @property
+    def _timestamps(self) -> dict[str, datetime]:
+        vehicle = self.coordinator.data.vehicles.get(self.vin) if self.coordinator.data else None
+        return vehicle.captured_at() if vehicle else {}
+
+    @property
+    def native_value(self) -> datetime | None:
+        """Return the newest timestamp the vehicle reported in any section."""
+        stamps = self._timestamps
+        return max(stamps.values()) if stamps else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the timestamp of each section, to show which part stopped reporting."""
+        return self._timestamps
 
 
 class SkodaRateLimitUntilSensor(SkodaVehicleEntity, SensorEntity):

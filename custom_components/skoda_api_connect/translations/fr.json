@@ -107,6 +107,9 @@
       "last_poll": {
         "name": "Dernière interrogation"
       },
+      "car_last_seen": {
+        "name": "Dernières données du véhicule"
+      },
       "rate_limit_until": {
         "name": "Limite de requêtes jusqu'à"
       },
@@ -149,6 +152,9 @@
     "button": {
       "refresh": {
         "name": "Interroger l'API maintenant"
+      },
+      "wake": {
+        "name": "Réveiller le véhicule"
       }
     },
     "device_tracker": {
@@ -178,6 +184,9 @@
       },
       "poll_interval_charging": {
         "name": "Intervalle d'interrogation pendant la charge"
+      },
+      "auto_wake": {
+        "name": "Réveiller le véhicule en charge après (0 = désactivé)"
       }
     },
     "select": {

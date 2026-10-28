@@ -18,13 +18,13 @@ an options flow, reauthentication support, and a diagnostics download.
 
 | Platform | Entities |
 |---|---|
-| `sensor` | Battery level, charging power, charge limit (read-only), charging rate, remaining charging time, battery/total range, fuel level, AdBlue range, mileage, target temperature, address of the parking position, name of the charging location profile currently active, API status (result of the last poll, diagnostic), last poll (date and time of the last successful poll, diagnostic), rate limit until (when the request quota is available again after a rate limit, diagnostic), API requests remaining (left of the hourly quota according to the last response, with the attributes `limit` and `reset_at`, diagnostic) |
+| `sensor` | Battery level, charging power, charge limit (read-only), charging rate, remaining charging time, battery/total range, fuel level, AdBlue range, mileage, target temperature, address of the parking position, name of the charging location profile currently active, API status (result of the last poll, diagnostic), last poll (date and time of the last successful poll, diagnostic), last vehicle data (when the vehicle itself last reported data to the Škoda servers, diagnostic), rate limit until (when the request quota is available again after a rate limit, diagnostic), API requests remaining (left of the hourly quota according to the last response, with the attributes `limit` and `reset_at`, diagnostic) |
 | `binary_sensor` | Doors, windows, trunk, bonnet, lights, central locking, charging, charging cable plugged in, charging cable lock, vehicle at saved charging location |
 | `device_tracker` | Parking position (shows on the Map dashboard; unknown while driving) |
 | `climate` | Remote air conditioning (on/off, active ventilation, target temperature) |
 | `switch` | Start/stop charging |
-| `button` | Poll API now (queries the MyŠkoda API for the vehicle immediately; costs one request of the API quota and is refused while the API is rate limited) |
-| `number` | Charge limit (target state of charge), per-vehicle polling intervals (normal / while charging) |
+| `button` | Poll API now (queries the MyŠkoda API for the vehicle immediately; costs one request of the API quota and is refused while the API is rate limited), Wake vehicle (see below) |
+| `number` | Charge limit (target state of charge), per-vehicle polling intervals (normal / while charging), automatic wake-up of a charging vehicle |
 | `select` | Charge mode |
 
 Sensors and controls are only created for the data and remote operations your specific vehicle
@@ -112,6 +112,19 @@ without losing entity history.
 The integration only uses the documented endpoints under
 `https://public.api.connect.skoda-auto.cz/api/v1/vehicles/{vin}` and authenticates with the
 `X-API-Key` header. Data is refreshed by polling.
+
+### Waking a vehicle
+
+The vehicle only reports to the Škoda servers from time to time. While charging it can stay silent for
+an hour, and the polls then return old values although they succeed. The sensor **Last vehicle data**
+shows when the car last reported; **Last poll** only shows when the integration last fetched data.
+
+The API has no wake-up call. The button **Wake vehicle** therefore re-sends the current charge mode,
+a command that changes nothing but has to reach the vehicle; the vehicle usually reports within a minute.
+The number **Wake charging vehicle after (0 = off)** does this automatically while a vehicle is charging
+and has not reported for the given number of minutes (off by default, minimum 10). Each wake-up uses two
+requests of the quota; it is skipped during a rate limit pause and when fewer than 6 requests are left.
+Both are unavailable in read-only mode.
 
 ### Per-vehicle polling intervals
 

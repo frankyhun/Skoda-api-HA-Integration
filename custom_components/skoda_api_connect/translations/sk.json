@@ -107,6 +107,9 @@
       "last_poll": {
         "name": "Posledný dopyt"
       },
+      "car_last_seen": {
+        "name": "Posledné údaje vozidla"
+      },
       "rate_limit_until": {
         "name": "Limit požiadaviek do"
       },
@@ -149,6 +152,9 @@
     "button": {
       "refresh": {
         "name": "Dopytovať API teraz"
+      },
+      "wake": {
+        "name": "Zobudiť vozidlo"
       }
     },
     "device_tracker": {
@@ -178,6 +184,9 @@
       },
       "poll_interval_charging": {
         "name": "Interval dopytovania pri nabíjaní"
+      },
+      "auto_wake": {
+        "name": "Zobudiť nabíjajúce vozidlo po (0 = vypnuté)"
       }
     },
     "select": {
