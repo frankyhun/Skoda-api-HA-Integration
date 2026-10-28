@@ -191,7 +191,15 @@ even in silent mode and Focus, and on Android it uses the alarm stream. Other no
 normal message. All targets are notified at the same time, and a failing one does not stop the
 others. The notification text is in English.
 
-The alert only reads data the polls already fetched, so it costs no requests of the API quota.
+A vehicle can stay silent towards the Škoda servers for a long time, and a poll then returns its
+last report, however old. So the alert is only sent on data the vehicle reported (the
+`carCapturedTimestamp` of the status) after the incident began; an older report may miss that the
+car was locked meanwhile. If there is no such report when the grace period ends, the integration
+wakes the vehicle once per incident, the same way as the **Wake vehicle** button (two requests of
+the quota), and decides on the report that follows. The wake-up is skipped in read-only mode, during
+a rate limit pause, when fewer than 6 requests of the hourly quota are left and for vehicles without
+a known charge mode; the alert then waits until the vehicle reports on its own. Apart from that
+wake-up the alert only reads data the polls already fetched and costs no requests.
 
 ### Rate limits
 

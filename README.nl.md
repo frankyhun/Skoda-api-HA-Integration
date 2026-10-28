@@ -181,8 +181,16 @@ ook in stille modus en Focus, op Android gebruikt hij het alarmkanaal. Andere no
 een gewone melding. Alle ontvangers krijgen de melding tegelijk, en een ontvanger die faalt houdt de
 andere niet tegen. De tekst van de melding is Engels.
 
-De melding leest alleen gegevens die de polls al hebben opgehaald en kost dus geen verzoeken van het
-API-quotum.
+Een voertuig kan zich lang niet bij de Škoda-servers melden, en een poll levert dan zijn laatste
+melding, hoe oud ook. Daarom wordt de melding alleen verstuurd op gegevens die het voertuig na het
+begin van het incident meldde (de `carCapturedTimestamp` van de status); een oudere melding weet
+misschien niet dat de auto intussen vergrendeld is. Is er aan het eind van de wachttijd geen zulke
+melding, dan wekt de integratie het voertuig één keer per incident, net als de knop **Voertuig
+wakker maken** (twee verzoeken van het quotum), en beslist op de melding die volgt. Het wekken wordt
+overgeslagen in alleen-lezen-modus, tijdens een rate-limit-pauze, als er minder dan 6 verzoeken van
+het uurquotum over zijn en bij voertuigen zonder bekende laadmodus; de melding wacht dan tot het
+voertuig zich uit zichzelf meldt. Afgezien daarvan leest de melding alleen gegevens die de polls al
+hebben opgehaald en kost ze geen verzoeken.
 
 ### Rate limits
 

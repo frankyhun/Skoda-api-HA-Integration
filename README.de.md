@@ -199,8 +199,16 @@ ertönt er auch im Lautlos- und Fokus-Modus, unter Android nutzt er den Alarm-Ka
 Benachrichtigungsdienste erhalten eine normale Nachricht. Alle Empfänger werden gleichzeitig
 benachrichtigt, und ein fehlerhafter hält die anderen nicht auf. Der Text der Benachrichtigung ist englisch.
 
-Der Alarm liest nur Daten, die die Abfragen ohnehin geholt haben, und kostet daher keine Anfragen des
-API-Kontingents.
+Ein Fahrzeug kann sich lange nicht bei den Škoda-Servern melden, und eine Abfrage liefert dann
+seine letzte Meldung, egal wie alt. Daher wird der Alarm nur auf Daten gesendet, die das Fahrzeug
+nach Beginn des Vorfalls gemeldet hat (der `carCapturedTimestamp` des Status); eine ältere Meldung
+weiß womöglich nicht, dass das Auto inzwischen verriegelt wurde. Liegt beim Ende der Wartezeit keine
+solche Meldung vor, weckt die Integration das Fahrzeug einmal pro Vorfall, genauso wie der
+Button **Fahrzeug aufwecken** (zwei Anfragen des Kontingents), und entscheidet anhand der
+folgenden Meldung. Das Aufwecken entfällt im Nur-Lesen-Modus, während einer Ratenlimit-Pause, wenn
+weniger als 6 Anfragen des Stundenkontingents übrig sind, und bei Fahrzeugen ohne bekannten Lademodus;
+der Alarm wartet dann, bis sich das Fahrzeug von selbst meldet. Abgesehen davon liest der Alarm nur
+Daten, die die Abfragen ohnehin geholt haben, und kostet keine Anfragen.
 
 ### Ratenlimit
 

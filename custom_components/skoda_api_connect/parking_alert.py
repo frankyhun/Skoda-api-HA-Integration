@@ -10,6 +10,7 @@ from functools import partial
 from typing import Any
 
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
@@ -75,6 +76,8 @@ class _Incident:
 
     since: datetime
     notified: bool = False
+    # The vehicle was woken to confirm the incident with a fresh report.
+    woken: bool = False
     cancel_timer: CALLBACK_TYPE | None = None
 
 
@@ -84,7 +87,12 @@ class SkodaParkingAlert:
     An incident starts at the first poll that shows the vehicle parked and not secured,
     and ends at the first poll that shows it secured or not parked. Failed polls neither
     start nor end an incident. Incidents are stored, so a restart or reload does not
-    send the alert again. The alert only reads polled data; it sends no API request.
+    send the alert again.
+
+    The alert is only sent on data the vehicle reported after the incident began: an
+    older snapshot may miss that the vehicle was secured without reporting it. If there
+    is no such report when the grace period ends, the vehicle is woken once (two
+    requests), and the alert waits for the report that follows.
     """
 
     def __init__(
@@ -109,7 +117,9 @@ class SkodaParkingAlert:
         for vin, incident in stored.items():
             since = dt_util.parse_datetime(str(incident.get("since")))
             if vin in self._coordinator.vins and since is not None:
-                self._incidents[vin] = _Incident(since, bool(incident.get("notified")))
+                self._incidents[vin] = _Incident(
+                    since, bool(incident.get("notified")), bool(incident.get("woken"))
+                )
         entry = self._entry
         entry.async_on_unload(self._coordinator.async_add_listener(self._async_check))
         # The grace period or the notification targets changed.
@@ -127,7 +137,11 @@ class SkodaParkingAlert:
     @callback
     def _async_save(self) -> None:
         data = {
-            vin: {"since": incident.since.isoformat(), "notified": incident.notified}
+            vin: {
+                "since": incident.since.isoformat(),
+                "notified": incident.notified,
+                "woken": incident.woken,
+            }
             for vin, incident in self._incidents.items()
         }
         # Unloading the entry waits for this task, so a reload reads the latest state.
@@ -154,7 +168,8 @@ class SkodaParkingAlert:
                 self._async_save()
                 self._async_schedule(vin)
             elif not incident.notified and incident.cancel_timer is None:
-                # Restored after a restart, or still waiting for notification targets.
+                # Restored after a restart, or still waiting for notification targets
+                # or a fresh report.
                 self._async_schedule(vin)
 
     async def _async_options_updated(
@@ -202,6 +217,12 @@ class SkodaParkingAlert:
             # Without targets nothing is sent, and the incident stays open so
             # targets added later still get notified.
             return
+        captured = vehicle.captured("status")
+        if captured is None or captured <= incident.since:
+            # The vehicle may have been secured since without reporting it. Wait for a
+            # newer report; every later poll checks again.
+            self._async_wake_once(vin, incident)
+            return
         incident.notified = True
         self._async_save()
         # Not a background task: those are cancelled on unload, which would lose an
@@ -211,6 +232,24 @@ class SkodaParkingAlert:
             self._async_send(targets, vehicle.name, reasons),
             f"{DOMAIN}_parking_alert_{vin}",
         )
+
+    @callback
+    def _async_wake_once(self, vin: str, incident: _Incident) -> None:
+        if incident.woken or not self._coordinator.can_wake(vin):
+            return
+        incident.woken = True
+        self._async_save()
+        self._entry.async_create_background_task(
+            self._hass, self._async_wake(vin), f"{DOMAIN}_parking_alert_wake_{vin}"
+        )
+
+    async def _async_wake(self, vin: str) -> None:
+        _LOGGER.info("Waking a vehicle to confirm that it is parked but not secured")
+        try:
+            # The follow-up refresh of the command brings the new report.
+            await self._coordinator.async_wake_vehicle(vin)
+        except HomeAssistantError as err:
+            _LOGGER.warning("Could not wake a vehicle for the parking alert: %s", err)
 
     async def _async_send(self, targets: list[str], name: str, reasons: list[str]) -> None:
         title = f"{name} is not secured"

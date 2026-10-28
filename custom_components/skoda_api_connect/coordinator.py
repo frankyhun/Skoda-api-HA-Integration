@@ -404,17 +404,19 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
                 )
         return data
 
+    def can_wake(self, vin: str) -> bool:
+        """Return whether an automatic wake-up may spend requests of the quota now."""
+        if self.read_only or time.monotonic() < self._paused_until.get(vin, 0):
+            return False
+        limit = self.api.rate_limits.get(vin)
+        return limit is None or limit.remaining is None or (
+            limit.remaining >= AUTO_WAKE_MIN_REQUESTS_REMAINING
+        )
+
     def _should_auto_wake(self, vin: str) -> bool:
         """Return whether a charging vehicle has been silent long enough to be woken."""
         minutes = self.auto_wake_minutes(vin)
-        if minutes <= 0 or self.read_only or not self.is_charging(vin):
-            return False
-        if time.monotonic() < self._paused_until.get(vin, 0):
-            return False
-        limit = self.api.rate_limits.get(vin)
-        if limit is not None and limit.remaining is not None and (
-            limit.remaining < AUTO_WAKE_MIN_REQUESTS_REMAINING
-        ):
+        if minutes <= 0 or not self.is_charging(vin) or not self.can_wake(vin):
             return False
         minutes = max(minutes, MIN_AUTO_WAKE_MINUTES)
         last_wake = self._last_auto_wake.get(vin)

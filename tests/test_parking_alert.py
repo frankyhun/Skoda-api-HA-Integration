@@ -37,6 +37,7 @@ from custom_components.skoda_api_connect.parking_alert import unsecured_reasons
 from .conftest import VIN
 
 GET = "custom_components.skoda_api_connect.api.SkodaApi.get_vehicle"
+SET_MODE = "custom_components.skoda_api_connect.api.SkodaApi.set_charge_mode"
 PHONE = "notify.mobile_app_phone"
 
 SECURED = {
@@ -77,18 +78,39 @@ def _entry(grace: int | None = 0, targets: list[str] | None = None) -> MockConfi
 
 
 class _Api:
-    """Serves the current payload from get_vehicle."""
+    """Serves the current payload from get_vehicle.
+
+    While ``fresh`` is set, the status counts as reported by the vehicle after the
+    incident began; otherwise the payload's own timestamp is kept.
+    """
 
     def __init__(self, data: dict) -> None:
         self.data = data
+        self.fresh = True
         self.mock = AsyncMock(side_effect=self._get)
 
     async def _get(self, vin, include=None):
-        return SkodaVehicle(vin=vin, data=copy.deepcopy(self.data))
+        data = copy.deepcopy(self.data)
+        if self.fresh and "status" in data:
+            data["status"]["carCapturedTimestamp"] = _stamp(timedelta(minutes=1))
+        return SkodaVehicle(vin=vin, data=data)
 
 
-async def _setup(hass: HomeAssistant, entry: MockConfigEntry, data: dict):
+def _stamp(offset: timedelta) -> str:
+    return (dt_util.utcnow() + offset).isoformat()
+
+
+def _stale(data: dict) -> dict:
+    """The payload as last reported an hour ago, by a vehicle that can be woken."""
+    data = copy.deepcopy(data)
+    data["status"]["carCapturedTimestamp"] = _stamp(-timedelta(hours=1))
+    data["charging"] = {"settings": {"preferredChargeMode": "MANUAL"}}
+    return data
+
+
+async def _setup(hass: HomeAssistant, entry: MockConfigEntry, data: dict, fresh: bool = True):
     api = _Api(data)
+    api.fresh = fresh
     patcher = patch(GET, new=api.mock)
     patcher.start()
     entry.add_to_hass(hass)
@@ -517,3 +539,79 @@ async def test_options_error_keeps_entered_values(hass: HomeAssistant) -> None:
         assert defaults[CONF_NOTIFY_TARGETS] == {"suggested_value": ["notify.nope"]}
     finally:
         p.stop()
+
+
+async def test_stale_data_wakes_vehicle_once(hass: HomeAssistant, freezer) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(targets=[PHONE])
+    with patch(SET_MODE, new=AsyncMock()) as set_mode:
+        api, p = await _setup(hass, entry, _stale(UNSECURED), fresh=False)
+        try:
+            # The data predates the incident: wake the vehicle instead of alerting.
+            assert calls == []
+            set_mode.assert_awaited_once_with(VIN, "MANUAL")
+            await _tick(hass, freezer, 1)  # the follow-up refresh brings no new report
+            await _poll(hass, entry)
+            assert calls == []
+            assert set_mode.await_count == 1  # no second wake for the same incident
+
+            api.fresh = True  # the vehicle reports at last, still not secured
+            await _poll(hass, entry)
+            assert len(calls) == 1
+        finally:
+            p.stop()
+
+
+async def test_stale_data_secured_after_wake(hass: HomeAssistant, freezer) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(targets=[PHONE])
+    with patch(SET_MODE, new=AsyncMock()) as set_mode:
+        api, p = await _setup(hass, entry, _stale(UNSECURED), fresh=False)
+        try:
+            # It was locked meanwhile, which the wake-up brings to light.
+            api.data, api.fresh = _stale(SECURED), True
+            await _tick(hass, freezer, 1)
+            assert calls == []
+
+            api.data, api.fresh = _stale(UNSECURED), False  # a new incident wakes again
+            await _poll(hass, entry)
+            assert set_mode.await_count == 2
+            await _tick(hass, freezer, 1)
+            assert calls == []
+        finally:
+            p.stop()
+
+
+async def test_stale_data_without_wake(hass: HomeAssistant) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={CONF_API_KEY: "key", CONF_VINS: [VIN]},
+        options={**_entry(targets=[PHONE]).options, CONF_READ_ONLY: True},
+    )
+    with patch(SET_MODE, new=AsyncMock()) as set_mode:
+        api, p = await _setup(hass, entry, _stale(UNSECURED), fresh=False)
+        try:
+            # Read-only mode sends no commands, so the alert waits for a report.
+            assert calls == []
+            set_mode.assert_not_awaited()
+            api.fresh = True
+            await _poll(hass, entry)
+            assert len(calls) == 1
+        finally:
+            p.stop()
+
+
+async def test_restart_keeps_wake_state(hass: HomeAssistant, hass_storage) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(targets=[PHONE])
+    key, stored = _stored(entry, dt_util.utcnow() - timedelta(minutes=10), notified=False)
+    stored["data"][VIN]["woken"] = True
+    hass_storage[key] = stored
+    with patch(SET_MODE, new=AsyncMock()) as set_mode:
+        api, p = await _setup(hass, entry, _stale(UNSECURED), fresh=False)
+        try:
+            set_mode.assert_not_awaited()  # already woken for this incident
+            assert calls == []
+        finally:
+            p.stop()
