@@ -1,0 +1,189 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Škoda-Kont verbannen",
+        "description": "Erstell an der MyŠkoda-App en API-Schlëssel ({api_keys_url}) a gitt en zesumme mat der FIN/VIN vun all Gefier an, fir dat en erstallt gouf (méi VINen duerch Komma trennen).",
+        "data": {
+          "api_key": "API-Schlëssel",
+          "vins": "VIN(en)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Škoda-API-Schlëssel aktualiséieren",
+        "description": "Däin API-Schlëssel ass ongülteg oder ofgelaf. Erstell en neien an der MyŠkoda-App ({api_keys_url}) a gitt en zesumme mat der/den VIN(en) vun dengen Gefierer an.",
+        "data": {
+          "api_key": "API-Schlëssel",
+          "vins": "VIN(en)"
+        }
+      },
+      "reconfigure": {
+        "title": "Škoda-API-Schlëssel änneren",
+        "description": "Gëff en neien API-Schlëssel aus der MyŠkoda-App an ({api_keys_url}), zum Beispill ier den aktuelle ofleeft. Du kanns och d'VIN(en) änneren.",
+        "data": {
+          "api_key": "API-Schlëssel",
+          "vins": "VIN(en)"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Den API-Schlëssel ass ongülteg, ofgelaf oder fir dëst Gefier net autoriséiert.",
+      "invalid_vin": "Gëff valabel VINen mat 17 Zeechen an, getrennt duerch Kommaen.",
+      "cannot_connect": "Verbindung mat Škoda API Connect net méiglech. Probéier et w.e.g. méi spéit nach eng Kéier.",
+      "rate_limited": "D'Limitt vun der Škoda-API gouf erreecht. Waart w.e.g. eng Zäit, ier s du et nach eng Kéier probéiers.",
+      "already_configured": "Dës Gefierauswiel ass schonn an engem aneren Entrée konfiguréiert."
+    },
+    "abort": {
+      "already_configured": "Dës Gefierauswiel ass schonn konfiguréiert.",
+      "reauth_successful": "D'Nei-Authentifizéierung war erfollegräich.",
+      "reconfigure_successful": "D'Rekonfiguratioun war erfollegräich."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Škoda API Connect – Optiounen",
+        "data": {
+          "scan_interval": "Ofrointervall (Minutten)",
+          "charging_scan_interval": "Ofrointervall beim Oplueden (Minutten)",
+          "plugged_in_fast_polling": "Kuerzen Opluedintervall och benotzen, wann de Ladekabel ugeschloss ass",
+          "read_only": "Nëmme-Lies-Modus (all Fernsteierung deaktivéieren)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_level": {
+        "name": "Batteriestand"
+      },
+      "charge_power": {
+        "name": "Opluedleeschtung"
+      },
+      "charge_limit": {
+        "name": "Opluedlimitt"
+      },
+      "charging_rate": {
+        "name": "Opluedrate"
+      },
+      "remaining_charging_time": {
+        "name": "Rescht-Opluedzäit"
+      },
+      "battery_range": {
+        "name": "Reechwäit mat Batterie"
+      },
+      "total_range": {
+        "name": "Gesamtreechwäit"
+      },
+      "fuel_level": {
+        "name": "Tankstand"
+      },
+      "ad_blue_range": {
+        "name": "AdBlue-Reechwäit"
+      },
+      "mileage": {
+        "name": "Kilometerstand"
+      },
+      "target_temperature": {
+        "name": "Ziltemperatur"
+      },
+      "location_address": {
+        "name": "Adress"
+      },
+      "charging_location_profile": {
+        "name": "Opluedplaz"
+      },
+      "api_status": {
+        "name": "API-Status",
+        "state": {
+          "ok": "OK",
+          "partial": "Deelweis disponibel",
+          "auth_error": "API-Schlëssel refuséiert",
+          "rate_limited": "Limitt erreecht",
+          "connection_error": "Verbindungsfeeler",
+          "api_error": "API-Feeler"
+        }
+      },
+      "last_poll": {
+        "name": "Lescht Ofro"
+      },
+      "rate_limit_until": {
+        "name": "Rate-Limitt bis"
+      },
+      "api_requests_remaining": {
+        "name": "Reschtlech API-Ufroen"
+      }
+    },
+    "binary_sensor": {
+      "doors_open": {
+        "name": "Dieren"
+      },
+      "windows_open": {
+        "name": "Fënsteren"
+      },
+      "trunk_open": {
+        "name": "Kofferraum"
+      },
+      "bonnet_open": {
+        "name": "Motorcapot"
+      },
+      "lights_on": {
+        "name": "Beliichtung"
+      },
+      "charging": {
+        "name": "Lued"
+      },
+      "plugged_in": {
+        "name": "Ladekabel ugeschloss"
+      },
+      "plug_lock": {
+        "name": "Verrigelung vum Ladekabel"
+      },
+      "vehicle_in_saved_location": {
+        "name": "Op enger gespäicherter Opluedplaz"
+      },
+      "unlocked": {
+        "name": "Zentralverriegelung"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "API elo ofruffen"
+      }
+    },
+    "device_tracker": {
+      "vehicle_location": {
+        "name": "Standuert"
+      }
+    },
+    "climate": {
+      "air_conditioning": {
+        "name": "Klimaanlag"
+      }
+    },
+    "switch": {
+      "charging": {
+        "name": "Oplueden"
+      },
+      "poll_when_plugged_in": {
+        "name": "Bei ugeschlossener Ladekabelverbindung méi dacks ofruffen"
+      }
+    },
+    "number": {
+      "charge_limit": {
+        "name": "Opluedlimitt"
+      },
+      "poll_interval_idle": {
+        "name": "Ofrointervall"
+      },
+      "poll_interval_charging": {
+        "name": "Ofrointervall beim Oplueden"
+      }
+    },
+    "select": {
+      "charge_mode": {
+        "name": "Opluedmodus"
+      }
+    }
+  }
+}
