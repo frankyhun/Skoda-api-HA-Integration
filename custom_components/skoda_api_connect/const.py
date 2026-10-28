@@ -22,6 +22,15 @@ KEY_PLUGGED_IN: Final = "plugged_in"
 # Key of the per-vehicle auto-wake time (minutes, 0 = off) inside CONF_VEHICLE_INTERVALS[vin].
 KEY_AUTO_WAKE: Final = "auto_wake"
 
+# Notify services ("notify.<service>") that receive the parking alert.
+CONF_NOTIFY_TARGETS: Final = "notify_targets"
+NOTIFY_DOMAIN: Final = "notify"
+# Key of the per-vehicle parking alert grace period (minutes) inside CONF_VEHICLE_INTERVALS[vin].
+KEY_ALERT_GRACE: Final = "alert_grace"
+DEFAULT_ALERT_GRACE_MINUTES: Final = 5
+MAX_ALERT_GRACE_MINUTES: Final = 30
+PARKED_STATE: Final = "PARKED"
+
 # A charging vehicle that has not reported for the auto-wake time gets a harmless command that
 # makes it report. Never wake more often than this, and only with this much quota left.
 MIN_AUTO_WAKE_MINUTES: Final = 10

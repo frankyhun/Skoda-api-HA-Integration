@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -16,6 +17,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .api import SkodaVehicle
 from .coordinator import SkodaConfigEntry, SkodaDataUpdateCoordinator
 from .entity import SkodaVehicleEntity
+from .parking_alert import is_parked, unsecured_reasons
 
 _UNKNOWN = ("UNKNOWN", "UNSUPPORTED")
 
@@ -45,6 +47,16 @@ class SkodaBinarySensorEntityDescription(BinarySensorEntityDescription):
 
     value_fn: Callable[[SkodaVehicle], bool | None]
     exists_fn: Callable[[SkodaVehicle], bool]
+    attrs_fn: Callable[[SkodaVehicle], dict[str, Any]] | None = None
+    # Unknown until the vehicle was polled since startup, instead of using cached data.
+    requires_poll: bool = False
+
+
+def _parked_unsecured(vehicle: SkodaVehicle) -> bool | None:
+    """Return the parking alert condition; unknown while the parking state is not reported."""
+    if is_parked(vehicle) is None:
+        return None
+    return bool(unsecured_reasons(vehicle))
 
 
 BINARY_SENSOR_DESCRIPTIONS: tuple[SkodaBinarySensorEntityDescription, ...] = (
@@ -119,6 +131,16 @@ BINARY_SENSOR_DESCRIPTIONS: tuple[SkodaBinarySensorEntityDescription, ...] = (
         value_fn=lambda v: v.get("charging", "isVehicleInSavedLocation"),
         exists_fn=_reported("charging", "isVehicleInSavedLocation"),
     ),
+    SkodaBinarySensorEntityDescription(
+        # The parking alert condition; like the alert, it ignores data cached before a restart.
+        key="parked_unsecured",
+        translation_key="parked_unsecured",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        value_fn=_parked_unsecured,
+        exists_fn=_reported("parkingPosition", "state"),
+        attrs_fn=lambda v: {"reasons": unsecured_reasons(v)},
+        requires_poll=True,
+    ),
 )
 
 
@@ -156,4 +178,18 @@ class SkodaBinarySensor(SkodaVehicleEntity, BinarySensorEntity):
     @property
     def is_on(self) -> bool | None:
         """Return true if the condition described is active."""
+        if self.entity_description.requires_poll and not self._polled:
+            return None
         return self.entity_description.value_fn(self.vehicle)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Return the extra attributes of the description, if any."""
+        attrs_fn = self.entity_description.attrs_fn
+        if attrs_fn is None or (self.entity_description.requires_poll and not self._polled):
+            return None
+        return attrs_fn(self.vehicle)
+
+    @property
+    def _polled(self) -> bool:
+        return self.coordinator.last_success.get(self.vin) is not None

@@ -47,9 +47,16 @@
           "scan_interval": "Abfrageintervall (Minuten)",
           "charging_scan_interval": "Abfrageintervall beim Laden (Minuten)",
           "plugged_in_fast_polling": "Ladeintervall auch bei eingestecktem Ladekabel verwenden",
-          "read_only": "Nur-Lese-Modus (alle Fernsteuerungen deaktivieren)"
+          "read_only": "Nur-Lese-Modus (alle Fernsteuerungen deaktivieren)",
+          "notify_targets": "Empfänger des Parkalarms"
+        },
+        "data_description": {
+          "notify_targets": "Benachrichtigungsdienste, die einen kritischen Alarm erhalten, wenn ein Fahrzeug geparkt, aber nicht verriegelt und geschlossen ist, z. B. notify.mobile_app_mein_telefon. Leer lassen für keine Alarme. Die Verzögerung wird pro Fahrzeug mit dem Regler „Parkalarm-Wartezeit“ eingestellt."
         }
       }
+    },
+    "error": {
+      "unknown_notify_target": "Es gibt keinen Benachrichtigungsdienst namens {target}."
     }
   },
   "entity": {
@@ -89,6 +96,15 @@
       },
       "location_address": {
         "name": "Adresse"
+      },
+      "doors_locked": {
+        "name": "Türen verriegelt"
+      },
+      "reliable_lock_status": {
+        "name": "Zuverlässiger Verriegelungsstatus"
+      },
+      "parking_state": {
+        "name": "Parkstatus"
       },
       "charging_location_profile": {
         "name": "Ladestandort"
@@ -150,6 +166,14 @@
       },
       "unlocked": {
         "name": "Zentralverriegelung"
+      },
+      "parked_unsecured": {
+        "name": "Geparkt, nicht gesichert",
+        "state_attributes": {
+          "reasons": {
+            "name": "Gründe"
+          }
+        }
       }
     },
     "button": {
@@ -190,6 +214,9 @@
       },
       "auto_wake": {
         "name": "Ladendes Fahrzeug wecken nach (0 = aus)"
+      },
+      "parking_alert_grace": {
+        "name": "Parkalarm-Wartezeit"
       }
     },
     "select": {

@@ -11,6 +11,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .api import SkodaApi
 from .const import CONF_API_KEY, CONF_READ_ONLY, CONF_VINS
 from .coordinator import SkodaConfigEntry, SkodaDataUpdateCoordinator
+from .parking_alert import SkodaParkingAlert
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SkodaConfigEntry) -> boo
 
     entry.runtime_data = coordinator
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
+    await SkodaParkingAlert(hass, entry, coordinator).async_start()
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 

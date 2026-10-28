@@ -47,9 +47,16 @@
           "scan_interval": "Ofrointervall (Minutten)",
           "charging_scan_interval": "Ofrointervall beim Oplueden (Minutten)",
           "plugged_in_fast_polling": "Kuerzen Opluedintervall och benotzen, wann de Ladekabel ugeschloss ass",
-          "read_only": "Nëmme-Lies-Modus (all Fernsteierung deaktivéieren)"
+          "read_only": "Nëmme-Lies-Modus (all Fernsteierung deaktivéieren)",
+          "notify_targets": "Empfänger vum Parkalarm"
+        },
+        "data_description": {
+          "notify_targets": "Notify-Servicer, déi e kriteschen Alarm kréien, wann e Gefier geparkt ass, mee net gespaart an zou, z. B. notify.mobile_app_mäin_telefon. Eidel loossen fir keng Alarmer. D'Verzögerung gëtt pro Gefier mam Regler „Waardezäit vum Parkalarm“ agestallt."
         }
       }
+    },
+    "error": {
+      "unknown_notify_target": "Et gëtt keen Notify-Service mam Numm {target}."
     }
   },
   "entity": {
@@ -89,6 +96,15 @@
       },
       "location_address": {
         "name": "Adress"
+      },
+      "doors_locked": {
+        "name": "Dieren gespaart"
+      },
+      "reliable_lock_status": {
+        "name": "Zouverlässege Spärstatus"
+      },
+      "parking_state": {
+        "name": "Parkstatus"
       },
       "charging_location_profile": {
         "name": "Opluedplaz"
@@ -150,6 +166,14 @@
       },
       "unlocked": {
         "name": "Zentralverriegelung"
+      },
+      "parked_unsecured": {
+        "name": "Geparkt, net geséchert",
+        "state_attributes": {
+          "reasons": {
+            "name": "Grënn"
+          }
+        }
       }
     },
     "button": {
@@ -190,6 +214,9 @@
       },
       "auto_wake": {
         "name": "Luedend Fahrzeug erwächen no (0 = aus)"
+      },
+      "parking_alert_grace": {
+        "name": "Waardezäit vum Parkalarm"
       }
     },
     "select": {

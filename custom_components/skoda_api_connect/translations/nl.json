@@ -47,9 +47,16 @@
           "scan_interval": "Pollinginterval (minuten)",
           "charging_scan_interval": "Pollinginterval tijdens laden (minuten)",
           "plugged_in_fast_polling": "Laadinterval ook gebruiken zolang de laadkabel is aangesloten",
-          "read_only": "Alleen-lezen modus (alle bedieningsfuncties uitschakelen)"
+          "read_only": "Alleen-lezen modus (alle bedieningsfuncties uitschakelen)",
+          "notify_targets": "Ontvangers van het parkeeralarm"
+        },
+        "data_description": {
+          "notify_targets": "Notify-services die een kritieke melding krijgen als een voertuig geparkeerd staat maar niet vergrendeld en gesloten is, bijv. notify.mobile_app_mijn_telefoon. Leeg laten voor geen meldingen. De vertraging stel je per voertuig in met de schuifregelaar \"Wachttijd parkeeralarm\"."
         }
       }
+    },
+    "error": {
+      "unknown_notify_target": "Er is geen notify-service met de naam {target}."
     }
   },
   "entity": {
@@ -89,6 +96,15 @@
       },
       "location_address": {
         "name": "Adres"
+      },
+      "doors_locked": {
+        "name": "Deuren vergrendeld"
+      },
+      "reliable_lock_status": {
+        "name": "Betrouwbare vergrendelingsstatus"
+      },
+      "parking_state": {
+        "name": "Parkeerstatus"
       },
       "charging_location_profile": {
         "name": "Laadlocatie"
@@ -150,6 +166,14 @@
       },
       "unlocked": {
         "name": "Centrale vergrendeling"
+      },
+      "parked_unsecured": {
+        "name": "Geparkeerd, niet beveiligd",
+        "state_attributes": {
+          "reasons": {
+            "name": "Redenen"
+          }
+        }
       }
     },
     "button": {
@@ -190,6 +214,9 @@
       },
       "auto_wake": {
         "name": "Ladend voertuig wekken na (0 = uit)"
+      },
+      "parking_alert_grace": {
+        "name": "Wachttijd parkeeralarm"
       }
     },
     "select": {

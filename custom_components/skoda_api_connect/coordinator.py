@@ -32,10 +32,12 @@ from .const import (
     CONF_CHARGING_SCAN_INTERVAL,
     CONF_PLUGGED_IN_FAST_POLLING,
     CONF_VEHICLE_INTERVALS,
+    DEFAULT_ALERT_GRACE_MINUTES,
     DEFAULT_CHARGING_SCAN_INTERVAL_MINUTES,
     DEFAULT_SCAN_INTERVAL_MINUTES,
     DOMAIN,
     EXPECTED_STATE_MINUTES,
+    KEY_ALERT_GRACE,
     KEY_AUTO_WAKE,
     KEY_PLUGGED_IN,
     MIN_AUTO_WAKE_MINUTES,
@@ -283,6 +285,11 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         overrides = self.config_entry.options.get(CONF_VEHICLE_INTERVALS, {})
         return int(overrides.get(vin, {}).get(KEY_AUTO_WAKE, 0))
 
+    def alert_grace_minutes(self, vin: str) -> int:
+        """Return how long a parked vehicle may stay unsecured before the alert is sent."""
+        overrides = self.config_entry.options.get(CONF_VEHICLE_INTERVALS, {})
+        return int(overrides.get(vin, {}).get(KEY_ALERT_GRACE, DEFAULT_ALERT_GRACE_MINUTES))
+
     def active_interval_kind(self, vin: str) -> str:
         """Return which interval the vehicle is polled at right now: "idle" or "charging"."""
         return "charging" if self.uses_charging_interval(vin) else "idle"
@@ -397,17 +404,19 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
                 )
         return data
 
+    def can_wake(self, vin: str) -> bool:
+        """Return whether an automatic wake-up may spend requests of the quota now."""
+        if self.read_only or time.monotonic() < self._paused_until.get(vin, 0):
+            return False
+        limit = self.api.rate_limits.get(vin)
+        return limit is None or limit.remaining is None or (
+            limit.remaining >= AUTO_WAKE_MIN_REQUESTS_REMAINING
+        )
+
     def _should_auto_wake(self, vin: str) -> bool:
         """Return whether a charging vehicle has been silent long enough to be woken."""
         minutes = self.auto_wake_minutes(vin)
-        if minutes <= 0 or self.read_only or not self.is_charging(vin):
-            return False
-        if time.monotonic() < self._paused_until.get(vin, 0):
-            return False
-        limit = self.api.rate_limits.get(vin)
-        if limit is not None and limit.remaining is not None and (
-            limit.remaining < AUTO_WAKE_MIN_REQUESTS_REMAINING
-        ):
+        if minutes <= 0 or not self.is_charging(vin) or not self.can_wake(vin):
             return False
         minutes = max(minutes, MIN_AUTO_WAKE_MINUTES)
         last_wake = self._last_auto_wake.get(vin)

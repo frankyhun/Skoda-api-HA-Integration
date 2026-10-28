@@ -10,7 +10,9 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .api import SkodaVehicle
 from .const import (
     AUTO_WAKE_NUMBER_MAX_MINUTES,
+    KEY_ALERT_GRACE,
     KEY_AUTO_WAKE,
+    MAX_ALERT_GRACE_MINUTES,
     MIN_AUTO_WAKE_MINUTES,
     MIN_SCAN_INTERVAL_MINUTES,
     POLL_INTERVAL_NUMBER_MAX_MINUTES,
@@ -45,6 +47,10 @@ async def async_setup_entry(
             SkodaAutoWakeNumber(coordinator, vin)
             for vin, vehicle in coordinator.data.vehicles.items()
             if not coordinator.read_only and vehicle.supports("setChargeMode")
+        ]
+        + [
+            SkodaParkingAlertGraceNumber(coordinator, vin)
+            for vin in coordinator.data.vehicles
         ]
     )
 
@@ -148,4 +154,34 @@ class SkodaAutoWakeNumber(SkodaVehicleEntity, NumberEntity):
         if minutes:
             minutes = max(minutes, MIN_AUTO_WAKE_MINUTES)
         self.coordinator.set_vehicle_option(self.vin, KEY_AUTO_WAKE, minutes)
+        self.async_write_ha_state()
+
+
+class SkodaParkingAlertGraceNumber(SkodaVehicleEntity, NumberEntity):
+    """Minutes a parked vehicle may stay unsecured before the parking alert is sent.
+
+    Stored in the entry options like the polling intervals; 0 sends the alert at once.
+    """
+
+    _attr_translation_key = "parking_alert_grace"
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_native_unit_of_measurement = UnitOfTime.MINUTES
+    _attr_native_min_value = 0
+    _attr_native_max_value = MAX_ALERT_GRACE_MINUTES
+    _attr_native_step = 1
+    _attr_mode = NumberMode.SLIDER
+
+    def __init__(self, coordinator: SkodaDataUpdateCoordinator, vin: str) -> None:
+        """Initialize the number entity."""
+        super().__init__(coordinator, vin)
+        self._attr_unique_id = f"{vin}_parking_alert_grace"
+
+    @property
+    def native_value(self) -> float:
+        """Return the configured grace period in minutes."""
+        return self.coordinator.alert_grace_minutes(self.vin)
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Persist the new grace period; the parking alert applies it to an open incident."""
+        self.coordinator.set_vehicle_option(self.vin, KEY_ALERT_GRACE, int(value))
         self.async_write_ha_state()

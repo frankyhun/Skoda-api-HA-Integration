@@ -6,6 +6,15 @@
       },
       "charging_rate": {
         "default": "mdi:speedometer"
+      },
+      "doors_locked": {
+        "default": "mdi:car-door-lock"
+      },
+      "reliable_lock_status": {
+        "default": "mdi:shield-lock"
+      },
+      "parking_state": {
+        "default": "mdi:parking"
       }
     },
     "binary_sensor": {
@@ -14,6 +23,12 @@
       },
       "bonnet_open": {
         "default": "mdi:car-wrench"
+      },
+      "parked_unsecured": {
+        "default": "mdi:shield-car",
+        "state": {
+          "on": "mdi:car-emergency"
+        }
       }
     },
     "number": {
@@ -22,6 +37,9 @@
       },
       "poll_interval_charging": {
         "default": "mdi:clock-fast"
+      },
+      "parking_alert_grace": {
+        "default": "mdi:timer-alert-outline"
       }
     },
     "button": {

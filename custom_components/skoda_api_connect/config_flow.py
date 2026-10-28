@@ -14,12 +14,15 @@ from homeassistant.config_entries import (
     OptionsFlow,
 )
 from homeassistant.const import CONF_SCAN_INTERVAL
-from homeassistant.core import callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
 )
 
 from .api import SkodaApi, SkodaApiError, SkodaAuthError, SkodaRateLimitError
@@ -27,6 +30,7 @@ from .const import (
     API_KEYS_URL,
     CONF_API_KEY,
     CONF_CHARGING_SCAN_INTERVAL,
+    CONF_NOTIFY_TARGETS,
     CONF_PLUGGED_IN_FAST_POLLING,
     CONF_READ_ONLY,
     CONF_VINS,
@@ -35,6 +39,7 @@ from .const import (
     DOMAIN,
     MAX_SCAN_INTERVAL_MINUTES,
     MIN_SCAN_INTERVAL_MINUTES,
+    NOTIFY_DOMAIN,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -204,19 +209,35 @@ class SkodaConnectOptionsFlow(OptionsFlow):
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Manage polling intervals and read-only mode."""
+        """Manage polling intervals, read-only mode and parking alert targets."""
+        errors: dict[str, str] = {}
+        placeholders = {"target": ""}
         if user_input is not None:
-            # Keep the per-vehicle overrides, which are edited via number entities.
-            return self.async_create_entry(data={**self.config_entry.options, **user_input})
+            targets, unknown = _normalize_notify_targets(
+                self.hass, user_input.get(CONF_NOTIFY_TARGETS, [])
+            )
+            if unknown is None:
+                # Keep the per-vehicle overrides, which are edited via number entities.
+                # The targets are always written, so clearing the field removes them.
+                return self.async_create_entry(
+                    data={
+                        **self.config_entry.options,
+                        **user_input,
+                        CONF_NOTIFY_TARGETS: targets,
+                    }
+                )
+            errors[CONF_NOTIFY_TARGETS] = "unknown_notify_target"
+            placeholders["target"] = unknown
 
-        current_interval = self.config_entry.options.get(
-            CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL_MINUTES
-        )
-        current_charging = self.config_entry.options.get(
+        # After an error, show what the user entered rather than the stored options.
+        values = {**self.config_entry.options, **(user_input or {})}
+        current_targets = values.get(CONF_NOTIFY_TARGETS, [])
+        current_interval = values.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL_MINUTES)
+        current_charging = values.get(
             CONF_CHARGING_SCAN_INTERVAL, DEFAULT_CHARGING_SCAN_INTERVAL_MINUTES
         )
-        current_plugged = self.config_entry.options.get(CONF_PLUGGED_IN_FAST_POLLING, False)
-        current_read_only = self.config_entry.options.get(CONF_READ_ONLY, False)
+        current_plugged = values.get(CONF_PLUGGED_IN_FAST_POLLING, False)
+        current_read_only = values.get(CONF_READ_ONLY, False)
 
         schema = vol.Schema(
             {
@@ -242,6 +263,49 @@ class SkodaConnectOptionsFlow(OptionsFlow):
                 ),
                 vol.Required(CONF_PLUGGED_IN_FAST_POLLING, default=current_plugged): bool,
                 vol.Required(CONF_READ_ONLY, default=current_read_only): bool,
+                # A suggested value, not a default: an emptied field must clear the targets.
+                vol.Optional(
+                    CONF_NOTIFY_TARGETS, description={"suggested_value": current_targets}
+                ): _notify_target_selector(self.hass, current_targets),
             }
         )
-        return self.async_show_form(step_id="init", data_schema=schema)
+        return self.async_show_form(
+            step_id="init",
+            data_schema=schema,
+            errors=errors,
+            description_placeholders=placeholders,
+        )
+
+
+def _notify_target_selector(hass: HomeAssistant, current: list[str]) -> SelectSelector:
+    """Dropdown of the existing notify services; other names can be typed."""
+    available = {
+        f"{NOTIFY_DOMAIN}.{service}"
+        for service in hass.services.async_services_for_domain(NOTIFY_DOMAIN)
+        # Entity based; needs an entity_id instead of a service name.
+        if service != "send_message"
+    }
+    return SelectSelector(
+        SelectSelectorConfig(
+            options=sorted(available | set(current)),
+            multiple=True,
+            custom_value=True,
+            mode=SelectSelectorMode.DROPDOWN,
+        )
+    )
+
+
+def _normalize_notify_targets(
+    hass: HomeAssistant, targets: list[str]
+) -> tuple[list[str], str | None]:
+    """Return the targets as "notify.<service>" and the first unknown one, if any."""
+    normalized: list[str] = []
+    for target in targets:
+        service = target.strip().removeprefix(f"{NOTIFY_DOMAIN}.")
+        if not service:
+            continue
+        if not hass.services.has_service(NOTIFY_DOMAIN, service):
+            return normalized, target
+        if (name := f"{NOTIFY_DOMAIN}.{service}") not in normalized:
+            normalized.append(name)
+    return normalized, None

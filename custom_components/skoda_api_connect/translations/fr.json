@@ -47,9 +47,16 @@
           "scan_interval": "Intervalle d'interrogation (minutes)",
           "charging_scan_interval": "Intervalle d'interrogation pendant la charge (minutes)",
           "plugged_in_fast_polling": "Utiliser l'intervalle de charge dès que le câble est branché",
-          "read_only": "Mode lecture seule (désactive toutes les commandes à distance)"
+          "read_only": "Mode lecture seule (désactive toutes les commandes à distance)",
+          "notify_targets": "Destinataires de l'alerte de stationnement"
+        },
+        "data_description": {
+          "notify_targets": "Services de notification qui reçoivent une alerte critique lorsqu'un véhicule est garé mais n'est pas verrouillé et fermé, p. ex. notify.mobile_app_mon_telephone. Laisser vide pour ne recevoir aucune alerte. Le délai se règle par véhicule avec le curseur « Délai de l'alerte de stationnement »."
         }
       }
+    },
+    "error": {
+      "unknown_notify_target": "Aucun service de notification ne s'appelle {target}."
     }
   },
   "entity": {
@@ -89,6 +96,15 @@
       },
       "location_address": {
         "name": "Adresse"
+      },
+      "doors_locked": {
+        "name": "Portes verrouillées"
+      },
+      "reliable_lock_status": {
+        "name": "État de verrouillage fiable"
+      },
+      "parking_state": {
+        "name": "État de stationnement"
       },
       "charging_location_profile": {
         "name": "Lieu de charge"
@@ -150,6 +166,14 @@
       },
       "unlocked": {
         "name": "Verrouillage centralisé"
+      },
+      "parked_unsecured": {
+        "name": "Garé, non sécurisé",
+        "state_attributes": {
+          "reasons": {
+            "name": "Raisons"
+          }
+        }
       }
     },
     "button": {
@@ -190,6 +214,9 @@
       },
       "auto_wake": {
         "name": "Réveiller le véhicule en charge après (0 = désactivé)"
+      },
+      "parking_alert_grace": {
+        "name": "Délai de l'alerte de stationnement"
       }
     },
     "select": {
