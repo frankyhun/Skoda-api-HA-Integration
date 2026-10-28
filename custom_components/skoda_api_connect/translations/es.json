@@ -1,0 +1,189 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Conectar cuenta de Škoda",
+        "description": "Crea una clave de API en la aplicación MyŠkoda ({api_keys_url}) e introdúcela junto con el VIN de cada vehículo para el que se haya creado (separa varios VIN con comas).",
+        "data": {
+          "api_key": "Clave de API",
+          "vins": "VIN(es)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Actualizar clave de API de Škoda",
+        "description": "Tu clave de API no es válida o ha caducado. Crea una nueva en la aplicación MyŠkoda ({api_keys_url}) e introdúcela junto con el/los VIN de tus vehículos.",
+        "data": {
+          "api_key": "Clave de API",
+          "vins": "VIN(es)"
+        }
+      },
+      "reconfigure": {
+        "title": "Cambiar clave de API de Škoda",
+        "description": "Introduce una nueva clave de API de la aplicación MyŠkoda ({api_keys_url}), por ejemplo, antes de que caduque la actual. También puedes cambiar los VIN.",
+        "data": {
+          "api_key": "Clave de API",
+          "vins": "VIN(es)"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "La clave de API no es válida, ha caducado o no está autorizada para este vehículo.",
+      "invalid_vin": "Introduce VIN válidos de 17 caracteres, separados por comas.",
+      "cannot_connect": "No se puede conectar con Škoda API Connect. Inténtalo de nuevo más tarde.",
+      "rate_limited": "Se ha alcanzado el límite de solicitudes de la API de Škoda. Espera un poco antes de volver a intentarlo.",
+      "already_configured": "Esta selección de vehículos ya está configurada en otra entrada."
+    },
+    "abort": {
+      "already_configured": "Esta selección de vehículos ya está configurada.",
+      "reauth_successful": "La reautenticación se ha completado correctamente.",
+      "reconfigure_successful": "La reconfiguración se ha completado correctamente."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opciones de Škoda API Connect",
+        "data": {
+          "scan_interval": "Intervalo de consulta (minutos)",
+          "charging_scan_interval": "Intervalo de consulta durante la carga (minutos)",
+          "plugged_in_fast_polling": "Usar también el intervalo de carga cuando el cable esté conectado",
+          "read_only": "Modo de solo lectura (desactivar todos los controles remotos)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_level": {
+        "name": "Nivel de batería"
+      },
+      "charge_power": {
+        "name": "Potencia de carga"
+      },
+      "charge_limit": {
+        "name": "Límite de carga"
+      },
+      "charging_rate": {
+        "name": "Velocidad de carga"
+      },
+      "remaining_charging_time": {
+        "name": "Tiempo de carga restante"
+      },
+      "battery_range": {
+        "name": "Autonomía de la batería"
+      },
+      "total_range": {
+        "name": "Autonomía total"
+      },
+      "fuel_level": {
+        "name": "Nivel de combustible"
+      },
+      "ad_blue_range": {
+        "name": "Autonomía de AdBlue"
+      },
+      "mileage": {
+        "name": "Kilometraje"
+      },
+      "target_temperature": {
+        "name": "Temperatura objetivo"
+      },
+      "location_address": {
+        "name": "Dirección"
+      },
+      "charging_location_profile": {
+        "name": "Ubicación de carga"
+      },
+      "api_status": {
+        "name": "Estado de la API",
+        "state": {
+          "ok": "Correcto",
+          "partial": "Disponible parcialmente",
+          "auth_error": "Clave de API rechazada",
+          "rate_limited": "Límite alcanzado",
+          "connection_error": "Error de conexión",
+          "api_error": "Error de API"
+        }
+      },
+      "last_poll": {
+        "name": "Última consulta"
+      },
+      "rate_limit_until": {
+        "name": "Límite de solicitudes hasta"
+      },
+      "api_requests_remaining": {
+        "name": "Solicitudes de API restantes"
+      }
+    },
+    "binary_sensor": {
+      "doors_open": {
+        "name": "Puertas"
+      },
+      "windows_open": {
+        "name": "Ventanas"
+      },
+      "trunk_open": {
+        "name": "Maletero"
+      },
+      "bonnet_open": {
+        "name": "Capó"
+      },
+      "lights_on": {
+        "name": "Luces"
+      },
+      "charging": {
+        "name": "Cargando"
+      },
+      "plugged_in": {
+        "name": "Cable de carga conectado"
+      },
+      "plug_lock": {
+        "name": "Bloqueo del cable de carga"
+      },
+      "vehicle_in_saved_location": {
+        "name": "En una ubicación de carga guardada"
+      },
+      "unlocked": {
+        "name": "Cierre centralizado"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "Consultar API ahora"
+      }
+    },
+    "device_tracker": {
+      "vehicle_location": {
+        "name": "Ubicación"
+      }
+    },
+    "climate": {
+      "air_conditioning": {
+        "name": "Aire acondicionado"
+      }
+    },
+    "switch": {
+      "charging": {
+        "name": "Carga"
+      },
+      "poll_when_plugged_in": {
+        "name": "Consultar con más frecuencia cuando esté conectado"
+      }
+    },
+    "number": {
+      "charge_limit": {
+        "name": "Límite de carga"
+      },
+      "poll_interval_idle": {
+        "name": "Intervalo de consulta"
+      },
+      "poll_interval_charging": {
+        "name": "Intervalo de consulta durante la carga"
+      }
+    },
+    "select": {
+      "charge_mode": {
+        "name": "Modo de carga"
+      }
+    }
+  }
+}
