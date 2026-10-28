@@ -7,6 +7,12 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.4.2]
+
+### Fixed
+
+- Parking alert never sent for a vehicle that was just parked: it reports once and then sleeps, and that report was older than the poll that opened the incident, so the alert kept waiting for a newer one (and the wake-up is often skipped, e.g. when polling uses most of the quota). If the vehicle reported the problem within one polling interval before that poll, the incident now begins at that report, the alert is sent on it, and the grace period counts from it. Older reports still wake the vehicle first.
+
 ## [0.4.1]
 
 ### Changed

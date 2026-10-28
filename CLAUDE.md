@@ -17,8 +17,9 @@ Default branch: `main`. Unofficial project - not affiliated with Škoda Auto.
     `_async_credentials_step`), options flow (intervals, read-only, parking alert notify targets)
   - `parking_alert.py` - `SkodaParkingAlert`: critical notification when a vehicle is parked but not
     secured (`unsecured_reasons()`), one per incident after the per-vehicle grace period; open incidents
-    are kept in their own `Store` so restarts/reloads do not re-alert; only alerts on a status report captured
-    after the incident began, otherwise wakes the vehicle once per incident (`coordinator.can_wake()`, the same
+    are kept in their own `Store` so restarts/reloads do not re-alert; an incident begins at the status report
+    showing it if that is at most one polling interval old (`_incident_start`), else at the poll; only alerts on a
+    status report captured when or after the incident began, otherwise wakes the vehicle once per incident (`coordinator.can_wake()`, the same
     quota guard as the automatic wake-up)
   - `entity.py` - `SkodaVehicleEntity` base; platforms: `sensor`, `binary_sensor`, `button`, `device_tracker`,
     `climate`, `switch`, `number`, `select`; `diagnostics.py`

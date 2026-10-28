@@ -176,7 +176,8 @@ type a name. Leave it empty for no alerts. The targets apply to all vehicles of 
 
 The **Parking alert grace period** number of each vehicle (a slider from 0 to 30 minutes, default 5,
 configuration category) sets how long the vehicle may stay unsecured before the alert goes out; 0
-sends it at once. The clock starts at the first poll that shows the problem, and the alert is only
+sends it at once. The clock starts at the first poll that shows the problem, or at the vehicle's own
+report of it if that came in since the previous poll (within one polling interval), and the alert is only
 sent if the latest poll still shows it. The state is only known at each poll, so the alert can come
 up to one polling interval later than the grace period alone suggests. Data cached from before a
 restart never triggers an alert; the vehicle has to be polled first.
@@ -193,8 +194,9 @@ others. The notification text is in English.
 
 A vehicle can stay silent towards the Škoda servers for a long time, and a poll then returns its
 last report, however old. So the alert is only sent on data the vehicle reported (the
-`carCapturedTimestamp` of the status) after the incident began; an older report may miss that the
-car was locked meanwhile. If there is no such report when the grace period ends, the integration
+`carCapturedTimestamp` of the status) when or after the incident began; an older report may miss that the
+car was locked meanwhile. A vehicle that was just parked usually reports once and then sleeps; since
+that report starts the incident, it is enough for the alert. If there is no such report when the grace period ends, the integration
 wakes the vehicle once per incident, the same way as the **Wake vehicle** button (two requests of
 the quota), and decides on the report that follows. The wake-up is skipped in read-only mode, during
 a rate limit pause, when fewer than 6 requests of the hourly quota are left and for vehicles without

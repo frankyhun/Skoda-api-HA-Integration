@@ -164,7 +164,8 @@ voor alle voertuigen van de integratie.
 
 De number **Wachttijd parkeeralarm** van elk voertuig (een schuifregelaar van 0 tot 30 minuten,
 standaard 5, configuratiecategorie) bepaalt hoe lang het voertuig onbeveiligd mag blijven voordat de
-melding wordt verstuurd; bij 0 meteen. De tijd loopt vanaf de eerste poll die het probleem toont, en
+melding wordt verstuurd; bij 0 meteen. De tijd loopt vanaf de eerste poll die het probleem toont, of
+vanaf de melding van het voertuig zelf als die sinds de vorige poll (binnen één pollinginterval) kwam, en
 de melding wordt alleen verstuurd als de laatste poll het nog toont. De toestand is alleen bij elke
 poll bekend, dus de melding kan tot één pollinginterval later komen dan de wachttijd alleen doet
 vermoeden. Gegevens die van vóór een herstart zijn opgeslagen, geven nooit een melding; het voertuig
@@ -182,9 +183,10 @@ een gewone melding. Alle ontvangers krijgen de melding tegelijk, en een ontvange
 andere niet tegen. De tekst van de melding is Engels.
 
 Een voertuig kan zich lang niet bij de Škoda-servers melden, en een poll levert dan zijn laatste
-melding, hoe oud ook. Daarom wordt de melding alleen verstuurd op gegevens die het voertuig na het
+melding, hoe oud ook. Daarom wordt de melding alleen verstuurd op gegevens die het voertuig bij of na het
 begin van het incident meldde (de `carCapturedTimestamp` van de status); een oudere melding weet
-misschien niet dat de auto intussen vergrendeld is. Is er aan het eind van de wachttijd geen zulke
+misschien niet dat de auto intussen vergrendeld is. Een net geparkeerd voertuig meldt zich meestal één
+keer en slaapt dan; omdat die melding het incident begint, is ze genoeg voor de melding. Is er aan het eind van de wachttijd geen zulke
 melding, dan wekt de integratie het voertuig één keer per incident, net als de knop **Voertuig
 wakker maken** (twee verzoeken van het quotum), en beslist op de melding die volgt. Het wekken wordt
 overgeslagen in alleen-lezen-modus, tijdens een rate-limit-pauze, als er minder dan 6 verzoeken van

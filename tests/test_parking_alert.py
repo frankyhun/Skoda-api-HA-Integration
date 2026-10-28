@@ -602,6 +602,45 @@ async def test_stale_data_without_wake(hass: HomeAssistant) -> None:
             p.stop()
 
 
+async def test_report_since_last_poll_alerts_without_wake(hass: HomeAssistant, freezer) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(grace=3, targets=[PHONE])
+    with patch(SET_MODE, new=AsyncMock()) as set_mode:
+        api, p = await _setup(hass, entry, _stale(_data("IN_MOTION")), fresh=False)
+        try:
+            # The vehicle parked a minute before this poll, reported once and went to
+            # sleep: no newer report will follow.
+            await _tick(hass, freezer, 5)
+            parked = _stale(UNSECURED)
+            parked["status"]["carCapturedTimestamp"] = _stamp(-timedelta(minutes=1))
+            api.data = parked
+            await _poll(hass, entry)
+            assert calls == []
+            await _tick(hass, freezer, 2)  # the grace period counts from the report
+            assert len(calls) == 1
+            set_mode.assert_not_awaited()
+        finally:
+            p.stop()
+
+
+async def test_report_older_than_interval_still_wakes(hass: HomeAssistant, freezer) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(targets=[PHONE])
+    with patch(SET_MODE, new=AsyncMock()) as set_mode:
+        api, p = await _setup(hass, entry, _stale(_data("IN_MOTION")), fresh=False)
+        try:
+            # Reported before the previous poll (default interval: 10 minutes), so it
+            # may be outdated: wake the vehicle instead of alerting.
+            parked = _stale(UNSECURED)
+            parked["status"]["carCapturedTimestamp"] = _stamp(-timedelta(minutes=11))
+            api.data = parked
+            await _poll(hass, entry)
+            assert calls == []
+            set_mode.assert_awaited_once_with(VIN, "MANUAL")
+        finally:
+            p.stop()
+
+
 async def test_restart_keeps_wake_state(hass: HomeAssistant, hass_storage) -> None:
     calls = async_mock_service(hass, "notify", "mobile_app_phone")
     entry = _entry(targets=[PHONE])
