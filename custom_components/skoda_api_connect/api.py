@@ -18,6 +18,13 @@ _LOGGER = logging.getLogger(__name__)
 
 PROBLEM_BASE = f"{API_BASE_URL}/problems/"
 REQUEST_TIMEOUT = ClientTimeout(total=30)
+# Vehicle sections that carry a carCapturedTimestamp, with the name used for them in attributes.
+CAPTURED_SECTIONS = {
+    "status": "status",
+    "charging": "charging",
+    "airConditioning": "air_conditioning",
+    "odometer": "odometer",
+}
 
 
 class SkodaApiError(Exception):
@@ -135,6 +142,23 @@ class SkodaVehicle:
             if node is None:
                 return None
         return node
+
+    def captured_at(self) -> dict[str, datetime]:
+        """Return when the vehicle itself last reported each section, by attribute name."""
+        stamps: dict[str, datetime] = {}
+        for section, name in CAPTURED_SECTIONS.items():
+            value = self.get(section, "carCapturedTimestamp")
+            if isinstance(value, str):
+                try:
+                    stamps[name] = datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC)
+                except ValueError:
+                    continue
+        return stamps
+
+    def last_captured(self) -> datetime | None:
+        """Return the newest time the vehicle reported any section to the Škoda servers."""
+        stamps = self.captured_at()
+        return max(stamps.values()) if stamps else None
 
     def has(self, *path: str) -> bool:
         """Return whether a nested value is reported (an omitted value means unknown)."""

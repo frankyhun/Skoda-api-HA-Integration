@@ -107,6 +107,9 @@
       "last_poll": {
         "name": "Last poll"
       },
+      "car_last_seen": {
+        "name": "Last vehicle data"
+      },
       "rate_limit_until": {
         "name": "Rate limit until"
       },
@@ -149,6 +152,9 @@
     "button": {
       "refresh": {
         "name": "Poll API now"
+      },
+      "wake": {
+        "name": "Wake vehicle"
       }
     },
     "device_tracker": {
@@ -178,6 +184,9 @@
       },
       "poll_interval_charging": {
         "name": "Polling interval while charging"
+      },
+      "auto_wake": {
+        "name": "Wake charging vehicle after (0 = off)"
       }
     },
     "select": {

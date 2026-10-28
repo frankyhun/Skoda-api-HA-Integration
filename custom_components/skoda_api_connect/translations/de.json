@@ -107,6 +107,9 @@
       "last_poll": {
         "name": "Letzter Abruf"
       },
+      "car_last_seen": {
+        "name": "Letzte Fahrzeugdaten"
+      },
       "rate_limit_until": {
         "name": "Rate-Limit bis"
       },
@@ -149,6 +152,9 @@
     "button": {
       "refresh": {
         "name": "API jetzt abrufen"
+      },
+      "wake": {
+        "name": "Fahrzeug aufwecken"
       }
     },
     "device_tracker": {
@@ -178,6 +184,9 @@
       },
       "poll_interval_charging": {
         "name": "Abfrageintervall beim Laden"
+      },
+      "auto_wake": {
+        "name": "Ladendes Fahrzeug wecken nach (0 = aus)"
       }
     },
     "select": {

@@ -107,6 +107,9 @@
       "last_poll": {
         "name": "Laatste poll"
       },
+      "car_last_seen": {
+        "name": "Laatste voertuiggegevens"
+      },
       "rate_limit_until": {
         "name": "Rate limit tot"
       },
@@ -149,6 +152,9 @@
     "button": {
       "refresh": {
         "name": "API nu opvragen"
+      },
+      "wake": {
+        "name": "Voertuig wakker maken"
       }
     },
     "device_tracker": {
@@ -178,6 +184,9 @@
       },
       "poll_interval_charging": {
         "name": "Pollinginterval tijdens laden"
+      },
+      "auto_wake": {
+        "name": "Ladend voertuig wekken na (0 = uit)"
       }
     },
     "select": {

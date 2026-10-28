@@ -42,7 +42,7 @@ python -m compileall -q custom_components           # quick syntax check
 - Enum values may gain new members - never assume an exhaustive list; treat `UNKNOWN`/`UNSUPPORTED` as
   unknown.
 - There is **no vehicle list**, so VINs are entered by the user. There is **no lock/unlock, honk/flash,
-  wakeup, window heating, battery care, reduced current**; do not re-add entities for them.
+  wakeup (the button "Wake vehicle" is only a workaround that re-sends the current charge mode), window heating, battery care, reduced current**; do not re-add entities for them.
 - Errors are RFC 9457 `application/problem+json`; the type suffix (e.g. `api-key-expired`) is kept in
   `SkodaApiError.problem`. 401 -> reauth, 429 -> backoff via `Retry-After`.
 
@@ -54,6 +54,8 @@ python -m compileall -q custom_components           # quick syntax check
   per-vehicle `vehicle_intervals: {vin: {idle, charging, plugged_in}}` (written via
   `coordinator.set_vehicle_option`; `plugged_in` overrides `plugged_in_fast_polling`). The update listener only reloads the entry
   when `read_only` changes; interval changes call `coordinator.reschedule()`.
+- `vehicle_intervals: {vin: {..., auto_wake}}` also holds the automatic wake-up time in minutes (0 = off), see
+  `coordinator._should_auto_wake`; `SkodaVehicle.last_captured()` is the newest `carCapturedTimestamp`.
 - Every remote control goes through `coordinator.async_command(vin, coroutine)`.
 - Changing user-facing strings: update **all six** translation files and copy `en.json` to
   `strings.json`.

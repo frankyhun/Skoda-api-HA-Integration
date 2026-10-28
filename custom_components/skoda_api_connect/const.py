@@ -19,6 +19,14 @@ CONF_PLUGGED_IN_FAST_POLLING: Final = "plugged_in_fast_polling"
 CONF_VEHICLE_INTERVALS: Final = "vehicle_intervals"
 # Key of the per-vehicle override of CONF_PLUGGED_IN_FAST_POLLING inside CONF_VEHICLE_INTERVALS[vin].
 KEY_PLUGGED_IN: Final = "plugged_in"
+# Key of the per-vehicle auto-wake time (minutes, 0 = off) inside CONF_VEHICLE_INTERVALS[vin].
+KEY_AUTO_WAKE: Final = "auto_wake"
+
+# A charging vehicle that has not reported for the auto-wake time gets a harmless command that
+# makes it report. Never wake more often than this, and only with this much quota left.
+MIN_AUTO_WAKE_MINUTES: Final = 10
+AUTO_WAKE_MIN_REQUESTS_REMAINING: Final = 6
+AUTO_WAKE_NUMBER_MAX_MINUTES: Final = 120
 
 # The public API allows 20 requests per hour and VIN (the limit is documented as not
 # final), and every command counts against the same quota. One poll costs a single

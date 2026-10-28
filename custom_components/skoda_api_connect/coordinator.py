@@ -27,13 +27,16 @@ from .api import (
     SkodaVehicle,
 )
 from .const import (
+    AUTO_WAKE_MIN_REQUESTS_REMAINING,
     CONF_CHARGING_SCAN_INTERVAL,
     CONF_PLUGGED_IN_FAST_POLLING,
     CONF_VEHICLE_INTERVALS,
     DEFAULT_CHARGING_SCAN_INTERVAL_MINUTES,
     DEFAULT_SCAN_INTERVAL_MINUTES,
     DOMAIN,
+    KEY_AUTO_WAKE,
     KEY_PLUGGED_IN,
+    MIN_AUTO_WAKE_MINUTES,
     POST_COMMAND_REFRESH_DELAY,
 )
 
@@ -143,6 +146,8 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         # Result of the last poll per vehicle, and the last time a poll succeeded.
         self.poll_results: dict[str, PollResult] = {}
         self.last_success: dict[str, datetime] = {}
+        # Per vehicle: time.monotonic() of the last automatic wake-up.
+        self._last_auto_wake: dict[str, float] = {}
         self.update_interval = self._shortest_interval()
         # Last known vehicle data, so the entities can be set up while the API is rate limited.
         self._store: Store[dict[str, dict]] = Store(
@@ -216,6 +221,11 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
                 options.get(CONF_CHARGING_SCAN_INTERVAL, DEFAULT_CHARGING_SCAN_INTERVAL_MINUTES)
             )
         return int(options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL_MINUTES))
+
+    def auto_wake_minutes(self, vin: str) -> int:
+        """Return after how many minutes without vehicle data a charging car is woken (0 = off)."""
+        overrides = self.config_entry.options.get(CONF_VEHICLE_INTERVALS, {})
+        return int(overrides.get(vin, {}).get(KEY_AUTO_WAKE, 0))
 
     def _interval_for(self, vin: str) -> timedelta:
         kind = "charging" if self.uses_charging_interval(vin) else "idle"
@@ -318,7 +328,50 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         # A vehicle that started or stopped charging switches to its other interval.
         self.data = data
         self.update_interval = self._shortest_interval()
+        for vin in self.vins:
+            if self._should_auto_wake(vin):
+                self.config_entry.async_create_background_task(
+                    self.hass, self._async_auto_wake(vin), f"{DOMAIN}_auto_wake_{vin}"
+                )
         return data
+
+    def _should_auto_wake(self, vin: str) -> bool:
+        """Return whether a charging vehicle has been silent long enough to be woken."""
+        minutes = self.auto_wake_minutes(vin)
+        if minutes <= 0 or self.read_only or not self.is_charging(vin):
+            return False
+        if time.monotonic() < self._paused_until.get(vin, 0):
+            return False
+        limit = self.api.rate_limits.get(vin)
+        if limit is not None and limit.remaining is not None and (
+            limit.remaining < AUTO_WAKE_MIN_REQUESTS_REMAINING
+        ):
+            return False
+        minutes = max(minutes, MIN_AUTO_WAKE_MINUTES)
+        last_wake = self._last_auto_wake.get(vin)
+        if last_wake is not None and time.monotonic() - last_wake < minutes * 60:
+            return False
+        captured = self.data.vehicles[vin].last_captured()
+        return captured is not None and dt_util.utcnow() - captured >= timedelta(minutes=minutes)
+
+    async def _async_auto_wake(self, vin: str) -> None:
+        self._last_auto_wake[vin] = time.monotonic()
+        _LOGGER.info("A charging vehicle has not reported data for a while; waking it")
+        try:
+            await self.async_wake_vehicle(vin)
+        except HomeAssistantError as err:
+            _LOGGER.warning("Could not wake a vehicle: %s", err)
+
+    async def async_wake_vehicle(self, vin: str) -> None:
+        """Try to make the vehicle report by re-sending its current charge mode.
+
+        The public API has no wake-up call. A command has to reach the vehicle, so this
+        sends one that changes nothing; the follow-up refresh picks up what it reported.
+        """
+        mode = self.data.vehicles[vin].get("charging", "settings", "preferredChargeMode")
+        if not mode:
+            raise HomeAssistantError("The current charge mode of the vehicle is unknown")
+        await self.async_command(vin, self.api.set_charge_mode(vin, mode))
 
     @staticmethod
     def _rate_limit_backoff(err: SkodaRateLimitError) -> timedelta:

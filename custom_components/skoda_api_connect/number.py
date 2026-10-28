@@ -8,7 +8,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .api import SkodaVehicle
-from .const import MIN_SCAN_INTERVAL_MINUTES, POLL_INTERVAL_NUMBER_MAX_MINUTES
+from .const import (
+    AUTO_WAKE_NUMBER_MAX_MINUTES,
+    KEY_AUTO_WAKE,
+    MIN_AUTO_WAKE_MINUTES,
+    MIN_SCAN_INTERVAL_MINUTES,
+    POLL_INTERVAL_NUMBER_MAX_MINUTES,
+)
 from .coordinator import SkodaConfigEntry, SkodaDataUpdateCoordinator
 from .entity import SkodaVehicleEntity
 
@@ -34,6 +40,11 @@ async def async_setup_entry(
             SkodaPollIntervalNumber(entry, coordinator, vin, kind)
             for vin in coordinator.data.vehicles
             for kind in ("idle", "charging")
+        ]
+        + [
+            SkodaAutoWakeNumber(coordinator, vin)
+            for vin, vehicle in coordinator.data.vehicles.items()
+            if not coordinator.read_only and vehicle.supports("setChargeMode")
         ]
     )
 
@@ -98,4 +109,39 @@ class SkodaPollIntervalNumber(SkodaVehicleEntity, NumberEntity):
     async def async_set_native_value(self, value: float) -> None:
         """Persist the new interval; the entry's update listener applies it."""
         self.coordinator.set_vehicle_option(self.vin, self._kind, int(value))
+        self.async_write_ha_state()
+
+
+class SkodaAutoWakeNumber(SkodaVehicleEntity, NumberEntity):
+    """Minutes without vehicle data after which a charging vehicle is woken (0 = off).
+
+    Stored in the entry options like the polling intervals. Each wake-up costs two
+    requests of the API quota, which is why this is off by default.
+    """
+
+    _attr_translation_key = "auto_wake"
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_native_unit_of_measurement = UnitOfTime.MINUTES
+    _attr_native_min_value = 0
+    _attr_native_max_value = AUTO_WAKE_NUMBER_MAX_MINUTES
+    _attr_native_step = 5
+    _attr_mode = NumberMode.BOX
+    _attr_icon = "mdi:sleep-off"
+
+    def __init__(self, coordinator: SkodaDataUpdateCoordinator, vin: str) -> None:
+        """Initialize the number entity."""
+        super().__init__(coordinator, vin)
+        self._attr_unique_id = f"{vin}_auto_wake"
+
+    @property
+    def native_value(self) -> float:
+        """Return the configured time in minutes, 0 if the automatic wake-up is off."""
+        return self.coordinator.auto_wake_minutes(self.vin)
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Persist the new time, raised to the minimum if it is not 0."""
+        minutes = int(value)
+        if minutes:
+            minutes = max(minutes, MIN_AUTO_WAKE_MINUTES)
+        self.coordinator.set_vehicle_option(self.vin, KEY_AUTO_WAKE, minutes)
         self.async_write_ha_state()

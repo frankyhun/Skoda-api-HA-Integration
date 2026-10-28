@@ -15,13 +15,13 @@ externe client-bibliotheek.
 
 | Platform | Entiteiten |
 |---|---|
-| `sensor` | Accuniveau, laadvermogen, laadlimiet (alleen lezen), laadsnelheid, resterende laadtijd, accu-/totaalbereik, brandstofniveau, AdBlue-bereik, kilometerstand, doeltemperatuur, adres van de parkeerpositie, naam van het actieve laadlocatieprofiel, API-status (resultaat van de laatste poll, diagnostisch), laatste poll (datum en tijd van de laatste geslaagde poll, diagnostisch) |
+| `sensor` | Accuniveau, laadvermogen, laadlimiet (alleen lezen), laadsnelheid, resterende laadtijd, accu-/totaalbereik, brandstofniveau, AdBlue-bereik, kilometerstand, doeltemperatuur, adres van de parkeerpositie, naam van het actieve laadlocatieprofiel, API-status (resultaat van de laatste poll, diagnostisch), laatste poll (datum en tijd van de laatste geslaagde poll, diagnostisch), laatste voertuiggegevens (wanneer het voertuig zelf voor het laatst gegevens naar de Škoda-servers stuurde, diagnostisch) |
 | `binary_sensor` | Deuren, ramen, kofferbak, motorkap, verlichting, centrale vergrendeling, laden, laadkabel aangesloten, vergrendeling laadkabel, voertuig op opgeslagen laadlocatie |
 | `device_tracker` | Parkeerpositie (zichtbaar op de kaart; onbekend tijdens het rijden) |
 | `climate` | Airco op afstand (aan/uit, actieve ventilatie, doeltemperatuur) |
 | `switch` | Laden starten/stoppen |
-| `button` | API nu opvragen (vraagt de MyŠkoda-API direct op voor het voertuig; kost één verzoek van het API-quotum en wordt geweigerd tijdens een rate limit) |
-| `number` | Laadlimiet (doel-laadniveau), pollinginterval per voertuig (normaal / tijdens laden) |
+| `button` | API nu opvragen (vraagt de MyŠkoda-API direct op voor het voertuig; kost één verzoek van het API-quotum en wordt geweigerd tijdens een rate limit), Voertuig wakker maken (zie hieronder) |
+| `number` | Laadlimiet (doel-laadniveau), pollinginterval per voertuig (normaal / tijdens laden), automatisch wekken van een ladend voertuig |
 | `select` | Laadmodus |
 
 Sensoren en bediening worden alleen aangemaakt voor de gegevens en acties die jouw voertuig
@@ -101,6 +101,20 @@ aan en voer die in.
 De integratie gebruikt uitsluitend de gedocumenteerde endpoints onder
 `https://public.api.connect.skoda-auto.cz/api/v1/vehicles/{vin}` en authenticeert met de
 `X-API-Key`-header.
+
+### Voertuig wakker maken
+
+Het voertuig meldt zich maar af en toe bij de Škoda-servers. Tijdens het laden kan het een uur lang
+zwijgen, en de polls geven dan oude waarden terug hoewel ze slagen. De sensor **Laatste
+voertuiggegevens** toont wanneer de auto zich voor het laatst meldde; **Laatste poll** toont alleen
+wanneer de integratie voor het laatst gegevens ophaalde.
+
+De API heeft geen wake-up-aanroep. De knop **Voertuig wakker maken** stuurt daarom de huidige laadmodus
+opnieuw, een commando dat niets verandert maar het voertuig moet bereiken; het voertuig meldt zich meestal
+binnen een minuut. Het getal **Ladend voertuig wekken na (0 = uit)** doet dit automatisch zolang een
+voertuig laadt en zich het opgegeven aantal minuten niet heeft gemeld (standaard uit, minimaal 10). Elke
+wekpoging kost twee verzoeken van het quotum; ze wordt overgeslagen tijdens een rate-limitpauze en als er
+minder dan 6 verzoeken over zijn. Beide zijn niet beschikbaar in de alleen-lezenmodus.
 
 ### Pollinginterval per voertuig
 
