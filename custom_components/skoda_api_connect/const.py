@@ -24,6 +24,7 @@ KEY_AUTO_WAKE: Final = "auto_wake"
 
 # Notify services ("notify.<service>") that receive the parking alert.
 CONF_NOTIFY_TARGETS: Final = "notify_targets"
+NOTIFY_DOMAIN: Final = "notify"
 # Key of the per-vehicle parking alert grace period (minutes) inside CONF_VEHICLE_INTERVALS[vin].
 KEY_ALERT_GRACE: Final = "alert_grace"
 DEFAULT_ALERT_GRACE_MINUTES: Final = 5

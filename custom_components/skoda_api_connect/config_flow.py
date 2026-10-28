@@ -39,12 +39,12 @@ from .const import (
     DOMAIN,
     MAX_SCAN_INTERVAL_MINUTES,
     MIN_SCAN_INTERVAL_MINUTES,
+    NOTIFY_DOMAIN,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
 VIN_RE = re.compile(r"^[A-HJ-NPR-Z0-9]{17}$")
-NOTIFY_DOMAIN = "notify"
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
@@ -229,17 +229,15 @@ class SkodaConnectOptionsFlow(OptionsFlow):
             errors[CONF_NOTIFY_TARGETS] = "unknown_notify_target"
             placeholders["target"] = unknown
 
-        current_targets = self.config_entry.options.get(CONF_NOTIFY_TARGETS, [])
-        if user_input is not None:
-            current_targets = user_input.get(CONF_NOTIFY_TARGETS, [])
-        current_interval = self.config_entry.options.get(
-            CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL_MINUTES
-        )
-        current_charging = self.config_entry.options.get(
+        # After an error, show what the user entered rather than the stored options.
+        values = {**self.config_entry.options, **(user_input or {})}
+        current_targets = values.get(CONF_NOTIFY_TARGETS, [])
+        current_interval = values.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL_MINUTES)
+        current_charging = values.get(
             CONF_CHARGING_SCAN_INTERVAL, DEFAULT_CHARGING_SCAN_INTERVAL_MINUTES
         )
-        current_plugged = self.config_entry.options.get(CONF_PLUGGED_IN_FAST_POLLING, False)
-        current_read_only = self.config_entry.options.get(CONF_READ_ONLY, False)
+        current_plugged = values.get(CONF_PLUGGED_IN_FAST_POLLING, False)
+        current_read_only = values.get(CONF_READ_ONLY, False)
 
         schema = vol.Schema(
             {

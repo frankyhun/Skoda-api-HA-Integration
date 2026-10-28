@@ -150,13 +150,15 @@ it overrides the global option for that vehicle.
 The integration can send a critical notification when a vehicle is parked
 (`parkingPosition.state` is `PARKED`) but any of these is true:
 
-- Reliable lock status is not `LOCKED`
+- Reliable lock status is not `LOCKED` (skipped when the vehicle does not report it; the API only
+  reports it for some vehicles)
 - Doors is not `CLOSED`
 - Doors locked is not `YES`
 - Locked is not `YES`
 - Windows is not `CLOSED` (skipped when the API reports `UNSUPPORTED`, i.e. no electric windows)
 
-A value reported as `UNKNOWN`, or missing from the response, also counts as not secured.
+A value reported as `UNKNOWN`, or one of the other fields missing from the response, also counts as
+not secured.
 
 To turn it on, open **Configure** and pick one or more **Parking alert notification targets**, for
 example `notify.mobile_app_my_phone`. The list offers your existing notify services; you can also
@@ -170,12 +172,14 @@ up to one polling interval later than the grace period alone suggests. Data cach
 restart never triggers an alert; the vehicle has to be polled first.
 
 One alert is sent per incident. Once a poll shows the vehicle secured (or no longer parked), the
-next problem starts a new incident. The binary sensor **Parked unsecured** shows the same condition,
+next problem starts a new incident. Open incidents are stored, so restarting Home Assistant or
+reloading the integration does not send the alert again. The binary sensor **Parked unsecured** shows the same condition,
 with the failing checks in its `reasons` attribute, for dashboards and your own automations.
 
 For Companion app targets (`notify.mobile_app_*`) the alert is sent as critical: on iOS it plays
 even in silent mode and Focus, and on Android it uses the alarm stream. Other notify services get a
-normal message. The notification text is in English.
+normal message. All targets are notified at the same time, and a failing one does not stop the
+others. The notification text is in English.
 
 The alert only reads data the polls already fetched, so it costs no requests of the API quota.
 

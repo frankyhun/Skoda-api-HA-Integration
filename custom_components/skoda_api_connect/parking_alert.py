@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from functools import partial
 from typing import Any
 
-import voluptuous as vol
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.event import async_call_later
+from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 
 from .api import SkodaVehicle
@@ -20,15 +20,17 @@ from .coordinator import SkodaConfigEntry, SkodaDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-NOTIFY_DOMAIN = "notify"
+STORAGE_VERSION = 1
 
-# (field in vehicle.status.overall, label, value that counts as secured)
-SECURED_CHECKS: tuple[tuple[str, str, str], ...] = (
-    ("reliableLockStatus", "Reliable lock status", "LOCKED"),
-    ("doors", "Doors", "CLOSED"),
-    ("doorsLocked", "Doors locked", "YES"),
-    ("locked", "Locked", "YES"),
-    ("windows", "Windows", "CLOSED"),
+# (field in vehicle.status.overall, label, value that counts as secured, required).
+# The API always reports the required fields; reliableLockStatus is optional and only
+# checked when the vehicle reports it.
+SECURED_CHECKS: tuple[tuple[str, str, str, bool], ...] = (
+    ("reliableLockStatus", "Reliable lock status", "LOCKED", False),
+    ("doors", "Doors", "CLOSED", True),
+    ("doorsLocked", "Doors locked", "YES", True),
+    ("locked", "Locked", "YES", True),
+    ("windows", "Windows", "CLOSED", True),
 )
 # Reported for vehicles without electric windows; such a check is skipped.
 _UNSUPPORTED = "UNSUPPORTED"
@@ -52,13 +54,16 @@ def is_parked(vehicle: SkodaVehicle) -> bool | None:
 def unsecured_reasons(vehicle: SkodaVehicle) -> list[str]:
     """Return what is not secured, or an empty list if not parked or all secured.
 
-    A missing or UNKNOWN value counts as not secured, since it cannot be confirmed.
+    An UNKNOWN value, or a missing required one, counts as not secured, since it
+    cannot be confirmed.
     """
     if not is_parked(vehicle):
         return []
     reasons = []
-    for field_name, label, secured in SECURED_CHECKS:
+    for field_name, label, secured, required in SECURED_CHECKS:
         value = vehicle.get("status", "overall", field_name)
+        if value is None and not required:
+            continue
         if value != secured and value != _UNSUPPORTED:
             reasons.append(f"{label}: {value or 'unknown'}")
     return reasons
@@ -78,7 +83,8 @@ class SkodaParkingAlert:
 
     An incident starts at the first poll that shows the vehicle parked and not secured,
     and ends at the first poll that shows it secured or not parked. Failed polls neither
-    start nor end an incident. The alert only reads polled data; it sends no API request.
+    start nor end an incident. Incidents are stored, so a restart or reload does not
+    send the alert again. The alert only reads polled data; it sends no API request.
     """
 
     def __init__(
@@ -92,21 +98,45 @@ class SkodaParkingAlert:
         self._entry = entry
         self._coordinator = coordinator
         self._incidents: dict[str, _Incident] = {}
+        self._store: Store[dict[str, dict[str, Any]]] = Store(
+            hass, STORAGE_VERSION, f"{DOMAIN}.{entry.entry_id}.parking_alert"
+        )
+        self._unloaded = False
 
-    @callback
-    def async_start(self) -> None:
-        """Watch the polls and the options, and check the current data."""
+    async def async_start(self) -> None:
+        """Restore open incidents, then watch the polls and the options."""
+        stored = await self._store.async_load() or {}
+        for vin, incident in stored.items():
+            since = dt_util.parse_datetime(str(incident.get("since")))
+            if vin in self._coordinator.vins and since is not None:
+                self._incidents[vin] = _Incident(since, bool(incident.get("notified")))
         entry = self._entry
         entry.async_on_unload(self._coordinator.async_add_listener(self._async_check))
         # The grace period or the notification targets changed.
         entry.async_on_unload(entry.add_update_listener(self._async_options_updated))
-        entry.async_on_unload(self._async_cancel_timers)
+        entry.async_on_unload(self._async_unload)
         self._async_check()
+
+    @callback
+    def _async_unload(self) -> None:
+        # An update listener task may still run after a reload has unloaded the entry.
+        self._unloaded = True
+        for incident in self._incidents.values():
+            self._async_cancel_timer(incident)
+
+    @callback
+    def _async_save(self) -> None:
+        data = {
+            vin: {"since": incident.since.isoformat(), "notified": incident.notified}
+            for vin, incident in self._incidents.items()
+        }
+        # Unloading the entry waits for this task, so a reload reads the latest state.
+        self._entry.async_create_task(self._hass, self._store.async_save(data))
 
     @callback
     def _async_check(self) -> None:
         coordinator = self._coordinator
-        if not coordinator.last_update_success or not coordinator.data:
+        if self._unloaded or not coordinator.last_update_success or not coordinator.data:
             return
         for vin, vehicle in coordinator.data.vehicles.items():
             # Data cached from before a restart may be stale; wait for a real poll.
@@ -117,14 +147,21 @@ class SkodaParkingAlert:
                 if incident is not None:
                     self._async_cancel_timer(incident)
                     del self._incidents[vin]
+                    self._async_save()
                 continue
             if incident is None:
                 self._incidents[vin] = _Incident(since=dt_util.utcnow())
+                self._async_save()
+                self._async_schedule(vin)
+            elif not incident.notified and incident.cancel_timer is None:
+                # Restored after a restart, or still waiting for notification targets.
                 self._async_schedule(vin)
 
     async def _async_options_updated(
         self, hass: HomeAssistant, entry: SkodaConfigEntry
     ) -> None:
+        if self._unloaded:
+            return
         for vin in list(self._incidents):
             self._async_schedule(vin)
 
@@ -152,14 +189,9 @@ class SkodaParkingAlert:
             incident.cancel_timer = None
 
     @callback
-    def _async_cancel_timers(self) -> None:
-        for incident in self._incidents.values():
-            self._async_cancel_timer(incident)
-
-    @callback
     def _async_fire(self, vin: str, _now: datetime | None = None) -> None:
         incident = self._incidents.get(vin)
-        if incident is None:
+        if self._unloaded or incident is None:
             return
         incident.cancel_timer = None
         # Use the latest known data; it may have changed since the incident began.
@@ -171,7 +203,10 @@ class SkodaParkingAlert:
             # targets added later still get notified.
             return
         incident.notified = True
-        self._entry.async_create_background_task(
+        self._async_save()
+        # Not a background task: those are cancelled on unload, which would lose an
+        # alert that is already stored as sent.
+        self._entry.async_create_task(
             self._hass,
             self._async_send(targets, vehicle.name, reasons),
             f"{DOMAIN}_parking_alert_{vin}",
@@ -180,14 +215,16 @@ class SkodaParkingAlert:
     async def _async_send(self, targets: list[str], name: str, reasons: list[str]) -> None:
         title = f"{name} is not secured"
         message = "Parked, but: " + ", ".join(reasons)
-        for target in targets:
-            domain, _, service = target.partition(".")
-            service_data: dict[str, Any] = {"title": title, "message": message}
-            if service.startswith("mobile_app_"):
-                service_data["data"] = CRITICAL_PUSH_DATA
-            try:
-                await self._hass.services.async_call(
-                    domain, service, service_data, blocking=True
-                )
-            except (HomeAssistantError, vol.Invalid) as err:
-                _LOGGER.error("Could not send the parking alert to %s: %s", target, err)
+        await asyncio.gather(
+            *(self._async_send_one(target, title, message) for target in targets)
+        )
+
+    async def _async_send_one(self, target: str, title: str, message: str) -> None:
+        domain, _, service = target.partition(".")
+        service_data: dict[str, Any] = {"title": title, "message": message}
+        if service.startswith("mobile_app_"):
+            service_data["data"] = CRITICAL_PUSH_DATA
+        try:
+            await self._hass.services.async_call(domain, service, service_data, blocking=True)
+        except Exception:  # noqa: BLE001 - one failing target must not stop the others
+            _LOGGER.exception("Could not send the parking alert to %s", target)

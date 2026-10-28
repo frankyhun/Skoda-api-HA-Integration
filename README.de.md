@@ -154,13 +154,15 @@ Fahrzeug und überschreibt für dieses Fahrzeug die globale Option.
 Die Integration kann eine kritische Benachrichtigung senden, wenn ein Fahrzeug geparkt ist
 (`parkingPosition.state` ist `PARKED`), aber eine dieser Bedingungen zutrifft:
 
-- Zuverlässiger Verriegelungsstatus ist nicht `LOCKED`
+- Zuverlässiger Verriegelungsstatus ist nicht `LOCKED` (entfällt, wenn das Fahrzeug ihn nicht meldet;
+  die API meldet ihn nur für manche Fahrzeuge)
 - Türen ist nicht `CLOSED`
 - Türen verriegelt ist nicht `YES`
 - Verriegelt ist nicht `YES`
 - Fenster ist nicht `CLOSED` (entfällt, wenn die API `UNSUPPORTED` meldet, also keine elektrischen Fensterheber)
 
-Ein als `UNKNOWN` gemeldeter oder in der Antwort fehlender Wert gilt ebenfalls als nicht gesichert.
+Ein als `UNKNOWN` gemeldeter Wert oder ein in der Antwort fehlendes anderes Feld gilt ebenfalls als
+nicht gesichert.
 
 Zum Einschalten öffnest du **Konfigurieren** und wählst einen oder mehrere **Empfänger des
 Parkalarms**, zum Beispiel `notify.mobile_app_mein_telefon`. Die Liste bietet deine vorhandenen
@@ -176,13 +178,15 @@ vermuten lässt. Vor einem Neustart zwischengespeicherte Daten lösen nie einen 
 Fahrzeug muss erst abgefragt werden.
 
 Pro Vorfall wird ein Alarm gesendet. Sobald eine Abfrage das Fahrzeug gesichert (oder nicht mehr
-geparkt) zeigt, beginnt das nächste Problem einen neuen Vorfall. Der Binärsensor **Geparkt, nicht
+geparkt) zeigt, beginnt das nächste Problem einen neuen Vorfall. Offene Vorfälle werden gespeichert, daher sendet ein
+Neustart von Home Assistant oder ein Neuladen der Integration den Alarm nicht erneut. Der Binärsensor **Geparkt, nicht
 gesichert** zeigt dieselbe Bedingung, mit den fehlgeschlagenen Prüfungen im Attribut `reasons`, für
 Dashboards und eigene Automationen.
 
 An Companion-App-Empfänger (`notify.mobile_app_*`) wird der Alarm als kritisch gesendet: unter iOS
 ertönt er auch im Lautlos- und Fokus-Modus, unter Android nutzt er den Alarm-Kanal. Andere
-Benachrichtigungsdienste erhalten eine normale Nachricht. Der Text der Benachrichtigung ist englisch.
+Benachrichtigungsdienste erhalten eine normale Nachricht. Alle Empfänger werden gleichzeitig
+benachrichtigt, und ein fehlerhafter hält die anderen nicht auf. Der Text der Benachrichtigung ist englisch.
 
 Der Alarm liest nur Daten, die die Abfragen ohnehin geholt haben, und kostet daher keine Anfragen des
 API-Kontingents.

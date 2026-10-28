@@ -16,8 +16,8 @@ Default branch: `main`. Unofficial project - not affiliated with Škoda Auto.
   - `config_flow.py` - API key + VIN list (comma separated), reauth and reconfigure (new API key / VINs at any time; both share
     `_async_credentials_step`), options flow (intervals, read-only, parking alert notify targets)
   - `parking_alert.py` - `SkodaParkingAlert`: critical notification when a vehicle is parked but not
-    secured (`unsecured_reasons()`), one per incident after the per-vehicle grace period; reads polled
-    data only, no API requests
+    secured (`unsecured_reasons()`), one per incident after the per-vehicle grace period; open incidents
+    are kept in their own `Store` so restarts/reloads do not re-alert; reads polled data only, no API requests
   - `entity.py` - `SkodaVehicleEntity` base; platforms: `sensor`, `binary_sensor`, `button`, `device_tracker`,
     `climate`, `switch`, `number`, `select`; `diagnostics.py`
   - `strings.json` is a copy of `translations/en.json`; translations exist for en/de/nl/fr/cs/sk/es/lb

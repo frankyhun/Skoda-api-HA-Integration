@@ -137,13 +137,15 @@ en overschrijft voor dat voertuig de algemene optie.
 De integratie kan een kritieke melding sturen als een voertuig geparkeerd staat
 (`parkingPosition.state` is `PARKED`) maar een van deze voorwaarden geldt:
 
-- Betrouwbare vergrendelingsstatus is niet `LOCKED`
+- Betrouwbare vergrendelingsstatus is niet `LOCKED` (overgeslagen als het voertuig hem niet meldt;
+  de API meldt hem alleen voor sommige voertuigen)
 - Deuren is niet `CLOSED`
 - Deuren vergrendeld is niet `YES`
 - Vergrendeld is niet `YES`
 - Ramen is niet `CLOSED` (overgeslagen als de API `UNSUPPORTED` meldt, dus geen elektrische ramen)
 
-Een waarde die als `UNKNOWN` wordt gemeld of in het antwoord ontbreekt, telt ook als niet beveiligd.
+Een waarde die als `UNKNOWN` wordt gemeld, of een van de andere velden die in het antwoord ontbreekt,
+telt ook als niet beveiligd.
 
 Om het aan te zetten open je **Configureren** en kies je een of meer **Ontvangers van het
 parkeeralarm**, bijvoorbeeld `notify.mobile_app_mijn_telefoon`. De lijst toont je bestaande
@@ -159,13 +161,15 @@ vermoeden. Gegevens die van vóór een herstart zijn opgeslagen, geven nooit een
 moet eerst gepold worden.
 
 Per incident wordt één melding verstuurd. Zodra een poll het voertuig beveiligd (of niet meer
-geparkeerd) toont, begint het volgende probleem een nieuw incident. De binaire sensor
+geparkeerd) toont, begint het volgende probleem een nieuw incident. Open incidenten worden opgeslagen,
+dus een herstart van Home Assistant of het herladen van de integratie stuurt de melding niet opnieuw. De binaire sensor
 **Geparkeerd, niet beveiligd** toont dezelfde voorwaarde, met de mislukte controles in het attribuut
 `reasons`, voor dashboards en je eigen automatiseringen.
 
 Naar Companion-app-ontvangers (`notify.mobile_app_*`) gaat de melding als kritiek: op iOS klinkt hij
 ook in stille modus en Focus, op Android gebruikt hij het alarmkanaal. Andere notify-services krijgen
-een gewone melding. De tekst van de melding is Engels.
+een gewone melding. Alle ontvangers krijgen de melding tegelijk, en een ontvanger die faalt houdt de
+andere niet tegen. De tekst van de melding is Engels.
 
 De melding leest alleen gegevens die de polls al hebben opgehaald en kost dus geen verzoeken van het
 API-quotum.

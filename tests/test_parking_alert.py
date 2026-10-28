@@ -11,6 +11,7 @@ from homeassistant.const import CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers import entity_registry as er
+from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import (
     MockConfigEntry,
     async_fire_time_changed,
@@ -124,8 +125,12 @@ def test_unsecured_reasons() -> None:
         "Reliable lock status: UNKNOWN",
         "Doors locked: TRUNK_OPENED",
     ]
+    # reliableLockStatus is optional in the API: a vehicle that does not report it is
+    # judged by the other checks only.
+    without_reliable = _data()
+    del without_reliable["status"]["overall"]["reliableLockStatus"]
+    assert reasons(without_reliable) == []
     assert reasons({"name": "Car 1", "parkingPosition": {"state": "PARKED"}}) == [
-        "Reliable lock status: unknown",
         "Doors: unknown",
         "Doors locked: unknown",
         "Locked: unknown",
@@ -264,6 +269,11 @@ async def test_no_alert_from_cached_data(hass: HomeAssistant, hass_storage) -> N
     # Set up from the cache while rate limited, but the cache may be stale.
     assert entry.runtime_data.data.vehicles[VIN].get("status", "overall", "doors") == "OPEN"
     assert calls == []
+    sensor = er.async_get(hass).async_get_entity_id(
+        "binary_sensor", DOMAIN, f"{VIN}_parked_unsecured"
+    )
+    assert hass.states.get(sensor).state == "unknown"
+    assert "reasons" not in hass.states.get(sensor).attributes
 
     api = _Api(UNSECURED)
     with (
@@ -275,6 +285,7 @@ async def test_no_alert_from_cached_data(hass: HomeAssistant, hass_storage) -> N
     ):
         await _poll(hass, entry)
     assert len(calls) == 1
+    assert hass.states.get(sensor).state == "on"
 
 
 async def test_options_flow_targets(hass: HomeAssistant) -> None:
@@ -388,5 +399,121 @@ async def test_diagnostics_redact_targets(hass: HomeAssistant) -> None:
         result = await async_get_config_entry_diagnostics(hass, entry)
         assert result["options"][CONF_NOTIFY_TARGETS] == "**REDACTED**"
         assert "mobile_app_phone" not in str(result)
+    finally:
+        p.stop()
+
+
+async def test_reload_does_not_repeat_alert(hass: HomeAssistant) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(targets=[PHONE])
+    api, p = await _setup(hass, entry, UNSECURED)
+    try:
+        assert len(calls) == 1
+        assert await hass.config_entries.async_reload(entry.entry_id)
+        await hass.async_block_till_done(wait_background_tasks=True)
+        await _poll(hass, entry)
+        assert len(calls) == 1  # same incident, already notified
+
+        api.data = SECURED  # the incident ends ...
+        await _poll(hass, entry)
+        assert await hass.config_entries.async_reload(entry.entry_id)
+        await hass.async_block_till_done(wait_background_tasks=True)
+        api.data = UNSECURED  # ... so this is a new one
+        await _poll(hass, entry)
+        assert len(calls) == 2
+    finally:
+        p.stop()
+
+
+async def test_read_only_reload_with_new_targets_alerts_once(hass: HomeAssistant) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry()  # no targets yet: the incident stays open
+    api, p = await _setup(hass, entry, UNSECURED)
+    try:
+        assert calls == []
+        # Adding targets and switching read-only mode reloads the entry while the old
+        # alert also sees the new targets.
+        hass.config_entries.async_update_entry(
+            entry, options={**entry.options, CONF_NOTIFY_TARGETS: [PHONE], CONF_READ_ONLY: True}
+        )
+        await hass.async_block_till_done(wait_background_tasks=True)
+        await _poll(hass, entry)
+        assert len(calls) == 1
+    finally:
+        p.stop()
+
+
+def _stored(entry: MockConfigEntry, since, notified: bool) -> tuple[str, dict]:
+    key = f"{DOMAIN}.{entry.entry_id}.parking_alert"
+    return key, {
+        "version": 1,
+        "minor_version": 1,
+        "key": key,
+        "data": {VIN: {"since": since.isoformat(), "notified": notified}},
+    }
+
+
+async def test_restart_keeps_notified_incident(hass: HomeAssistant, hass_storage) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(targets=[PHONE])
+    key, stored = _stored(entry, dt_util.utcnow() - timedelta(hours=1), notified=True)
+    hass_storage[key] = stored
+    api, p = await _setup(hass, entry, UNSECURED)
+    try:
+        assert calls == []
+    finally:
+        p.stop()
+
+
+async def test_restart_resumes_grace_period(hass: HomeAssistant, hass_storage) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(grace=5, targets=[PHONE])
+    key, stored = _stored(entry, dt_util.utcnow() - timedelta(minutes=10), notified=False)
+    hass_storage[key] = stored
+    api, p = await _setup(hass, entry, UNSECURED)
+    try:
+        assert len(calls) == 1  # the grace period ran out during the restart
+    finally:
+        p.stop()
+
+
+async def test_failing_target_does_not_stop_others(hass: HomeAssistant) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+
+    async def _broken(call) -> None:
+        raise ValueError("boom")
+
+    hass.services.async_register("notify", "broken", _broken)
+    entry = _entry(targets=["notify.broken", PHONE])
+    api, p = await _setup(hass, entry, UNSECURED)
+    try:
+        assert len(calls) == 1
+    finally:
+        p.stop()
+
+
+async def test_options_error_keeps_entered_values(hass: HomeAssistant) -> None:
+    entry = _entry()
+    api, p = await _setup(hass, entry, SECURED)
+    try:
+        result = await hass.config_entries.options.async_init(entry.entry_id)
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"],
+            {
+                CONF_SCAN_INTERVAL: 20,
+                CONF_CHARGING_SCAN_INTERVAL: 7,
+                CONF_READ_ONLY: True,
+                CONF_NOTIFY_TARGETS: ["notify.nope"],
+            },
+        )
+        assert result["errors"] == {CONF_NOTIFY_TARGETS: "unknown_notify_target"}
+        defaults = {
+            str(key): key.default() if callable(key.default) else key.description
+            for key in result["data_schema"].schema
+        }
+        assert defaults[CONF_SCAN_INTERVAL] == 20
+        assert defaults[CONF_CHARGING_SCAN_INTERVAL] == 7
+        assert defaults[CONF_READ_ONLY] is True
+        assert defaults[CONF_NOTIFY_TARGETS] == {"suggested_value": ["notify.nope"]}
     finally:
         p.stop()

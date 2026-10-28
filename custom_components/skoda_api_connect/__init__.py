@@ -37,7 +37,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SkodaConfigEntry) -> boo
 
     entry.runtime_data = coordinator
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
-    SkodaParkingAlert(hass, entry, coordinator).async_start()
+    await SkodaParkingAlert(hass, entry, coordinator).async_start()
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
