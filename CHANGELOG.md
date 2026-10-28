@@ -7,6 +7,12 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.4.1]
+
+### Changed
+
+- Icons for entities that had none: the charge limit (sensor and number), the fuel level, the charge mode and the charging switch. The API status sensor now uses `mdi:api`, so it no longer shares its icon with "Last vehicle data".
+
 ## [0.4.0]
 
 ### Added

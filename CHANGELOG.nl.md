@@ -7,6 +7,12 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+## [0.4.1]
+
+### Gewijzigd
+
+- Pictogrammen voor entiteiten die er geen hadden: de laadlimiet (sensor en number), het brandstofniveau, de laadmodus en de laadschakelaar. De API-statussensor gebruikt nu `mdi:api`, zodat hij zijn pictogram niet meer deelt met "Laatste voertuiggegevens".
+
 ## [0.4.0]
 
 ### Toegevoegd
