@@ -121,16 +121,19 @@
         }
       },
       "last_poll": {
-        "name": "Last poll"
+        "name": "Last API poll"
       },
       "car_last_seen": {
         "name": "Last vehicle data"
       },
       "rate_limit_until": {
-        "name": "Rate limit until"
+        "name": "API rate limit until"
       },
       "api_requests_remaining": {
         "name": "API requests remaining"
+      },
+      "poll_interval": {
+        "name": "Current polling interval"
       }
     },
     "binary_sensor": {

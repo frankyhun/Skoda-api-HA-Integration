@@ -17,7 +17,7 @@ from .const import (
     MIN_SCAN_INTERVAL_MINUTES,
     POLL_INTERVAL_NUMBER_MAX_MINUTES,
 )
-from .coordinator import SkodaConfigEntry, SkodaDataUpdateCoordinator
+from .coordinator import Expectation, SkodaConfigEntry, SkodaDataUpdateCoordinator
 from .entity import SkodaVehicleEntity
 
 
@@ -59,6 +59,7 @@ class SkodaChargeLimitNumber(SkodaVehicleEntity, NumberEntity):
     """Represents the target state-of-charge limit."""
 
     _attr_translation_key = "charge_limit"
+    _expected_key = "charge_limit"
     _attr_native_unit_of_measurement = PERCENTAGE
     # Vehicles typically accept 50-100 in steps of 10 and reject other values.
     _attr_native_min_value = 50
@@ -74,13 +75,16 @@ class SkodaChargeLimitNumber(SkodaVehicleEntity, NumberEntity):
     @property
     def native_value(self) -> float | None:
         """Return the currently configured charge limit."""
+        if (expected := self._expected()) is not None:
+            return expected
         return self.vehicle.get("charging", "settings", "targetStateOfChargeInPercent")
 
     async def async_set_native_value(self, value: float) -> None:
         """Set a new charge limit."""
         await self.coordinator.async_command(
             self.vin,
-            self.coordinator.api.set_charging_limit(self.vin, int(value))
+            self.coordinator.api.set_charging_limit(self.vin, int(value)),
+            Expectation("charge_limit", int(value), "charging"),
         )
 
 

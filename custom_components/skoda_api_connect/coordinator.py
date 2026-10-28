@@ -8,10 +8,11 @@ import time
 from collections.abc import Awaitable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_SCAN_INTERVAL
-from homeassistant.core import CALLBACK_TYPE, HomeAssistant
+from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.storage import Store
@@ -35,6 +36,7 @@ from .const import (
     DEFAULT_CHARGING_SCAN_INTERVAL_MINUTES,
     DEFAULT_SCAN_INTERVAL_MINUTES,
     DOMAIN,
+    EXPECTED_STATE_MINUTES,
     KEY_ALERT_GRACE,
     KEY_AUTO_WAKE,
     KEY_PLUGGED_IN,
@@ -112,6 +114,24 @@ def _poll_result(result: SkodaVehicle | Exception) -> PollResult:
     )
 
 
+@dataclass(frozen=True)
+class Expectation:
+    """The state a vehicle should reach after an accepted command, shown until it reports."""
+
+    key: str
+    value: Any
+    # Section of the vehicle data whose carCapturedTimestamp confirms or contradicts it.
+    section: str
+    ttl: timedelta = timedelta(minutes=EXPECTED_STATE_MINUTES)
+
+
+@dataclass
+class _PendingExpectation:
+    expectation: Expectation
+    issued: datetime
+    cancel_expiry: CALLBACK_TYPE
+
+
 @dataclass
 class SkodaData:
     """Container for all configured vehicles."""
@@ -148,6 +168,8 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         # Result of the last poll per vehicle, and the last time a poll succeeded.
         self.poll_results: dict[str, PollResult] = {}
         self.last_success: dict[str, datetime] = {}
+        # Expected states after accepted commands, by (vin, key); see Expectation.
+        self._expected: dict[tuple[str, str], _PendingExpectation] = {}
         # Per vehicle: time.monotonic() of the last automatic wake-up.
         self._last_auto_wake: dict[str, float] = {}
         self.update_interval = self._shortest_interval()
@@ -224,6 +246,40 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
             )
         return int(options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL_MINUTES))
 
+    def expected(self, vin: str, key: str) -> Any | None:
+        """Return the state a command is expected to cause, or None if nothing is pending."""
+        pending = self._expected.get((vin, key))
+        return pending.expectation.value if pending else None
+
+    def _expect(self, vin: str, expectation: Expectation) -> None:
+        self._drop_expected(vin, expectation.key)
+
+        @callback
+        def _expire(_now: datetime) -> None:
+            if self._expected.pop((vin, expectation.key), None) is not None:
+                self.async_update_listeners()
+
+        self._expected[(vin, expectation.key)] = _PendingExpectation(
+            expectation,
+            dt_util.utcnow(),
+            async_call_later(self.hass, expectation.ttl.total_seconds(), _expire),
+        )
+        self.async_update_listeners()
+
+    def _drop_expected(self, vin: str, key: str) -> None:
+        if pending := self._expected.pop((vin, key), None):
+            pending.cancel_expiry()
+
+    def _drop_reported(self) -> None:
+        """Forget expected states the vehicle has reported on since the command."""
+        if not self.data:
+            return
+        for (vin, key), pending in list(self._expected.items()):
+            vehicle = self.data.vehicles.get(vin)
+            captured = vehicle.captured(pending.expectation.section) if vehicle else None
+            if captured is not None and captured > pending.issued:
+                self._drop_expected(vin, key)
+
     def auto_wake_minutes(self, vin: str) -> int:
         """Return after how many minutes without vehicle data a charging car is woken (0 = off)."""
         overrides = self.config_entry.options.get(CONF_VEHICLE_INTERVALS, {})
@@ -234,9 +290,12 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         overrides = self.config_entry.options.get(CONF_VEHICLE_INTERVALS, {})
         return int(overrides.get(vin, {}).get(KEY_ALERT_GRACE, DEFAULT_ALERT_GRACE_MINUTES))
 
+    def active_interval_kind(self, vin: str) -> str:
+        """Return which interval the vehicle is polled at right now: "idle" or "charging"."""
+        return "charging" if self.uses_charging_interval(vin) else "idle"
+
     def _interval_for(self, vin: str) -> timedelta:
-        kind = "charging" if self.uses_charging_interval(vin) else "idle"
-        return timedelta(minutes=self.interval_minutes(vin, kind))
+        return timedelta(minutes=self.interval_minutes(vin, self.active_interval_kind(vin)))
 
     def _delay_for(self, vin: str) -> timedelta:
         """Return the time until the vehicle is polled next: its interval, or the pause."""
@@ -264,6 +323,8 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         if interval != self.update_interval:
             self.update_interval = interval
             self._schedule_refresh()
+        # Entities showing the active interval follow a changed setting right away.
+        self.async_update_listeners()
 
     async def _async_update_data(self) -> SkodaData:
         """Fetch the latest data for every vehicle from the cloud API."""
@@ -334,6 +395,7 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         )
         # A vehicle that started or stopped charging switches to its other interval.
         self.data = data
+        self._drop_reported()
         self.update_interval = self._shortest_interval()
         for vin in self.vins:
             if self._should_auto_wake(vin):
@@ -387,8 +449,14 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         backoff = err.retry_after + RATE_LIMIT_MARGIN
         return min(max(backoff, MIN_RATE_LIMIT_BACKOFF), MAX_RATE_LIMIT_BACKOFF)
 
-    async def async_command(self, vin: str, command: Awaitable[None]) -> None:
+    async def async_command(
+        self, vin: str, command: Awaitable[None], expect: Expectation | None = None
+    ) -> None:
         """Run a remote command and schedule a single follow-up refresh of that vehicle.
+
+        With ``expect`` the entity shows the expected state at once, until the vehicle
+        reports newer data of that section or the expectation expires. A command the API
+        rejects raises before that, so nothing is expected then.
 
         Commands count against the same request quota as polling, so instead of
         refreshing after every call this waits a moment for the vehicle and refreshes once.
@@ -408,6 +476,8 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         except SkodaApiError as err:
             raise HomeAssistantError(f"The vehicle did not accept the request: {err}") from err
 
+        if expect is not None:
+            self._expect(vin, expect)
         self._force.add(vin)
         if self._cancel_refresh:
             self._cancel_refresh()
@@ -443,6 +513,8 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         if self._cancel_refresh:
             self._cancel_refresh()
             self._cancel_refresh = None
+        for vin, key in list(self._expected):
+            self._drop_expected(vin, key)
         await super().async_shutdown()
 
 

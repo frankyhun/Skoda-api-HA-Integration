@@ -19,7 +19,7 @@ Options-Flow, Reauthentifizierung und Diagnose-Download.
 
 | Plattform | Entitäten |
 |---|---|
-| `sensor` | Batteriestand, Ladeleistung, Ladegrenze (nur lesend), Laderate, verbleibende Ladezeit, Batterie-/Gesamtreichweite, Kraftstoffstand, AdBlue-Reichweite, Kilometerstand, Zieltemperatur, Adresse der Parkposition, Türen verriegelt, zuverlässiger Verriegelungsstatus und Parkstatus (wie von der API gemeldet, z. B. `YES`, `TRUNK_OPENED`, `PARKED`), Name des aktuell aktiven Ladestandort-Profils, API-Status (Ergebnis der letzten Abfrage, Diagnose), Letzter Abruf (Datum und Uhrzeit des letzten erfolgreichen Abrufs, Diagnose), Letzte Fahrzeugdaten (wann das Fahrzeug selbst zuletzt Daten an die Škoda-Server gemeldet hat, Diagnose), Rate-Limit bis (wann das Anfragekontingent nach einem Rate-Limit wieder verfügbar ist, Diagnose), Verbleibende API-Anfragen (Rest des Stundenkontingents laut letzter Antwort, mit den Attributen `limit` und `reset_at`, Diagnose) |
+| `sensor` | Batteriestand, Ladeleistung, Ladegrenze (nur lesend), Laderate, verbleibende Ladezeit, Batterie-/Gesamtreichweite, Kraftstoffstand, AdBlue-Reichweite, Kilometerstand, Zieltemperatur, Adresse der Parkposition, Türen verriegelt, zuverlässiger Verriegelungsstatus und Parkstatus (wie von der API gemeldet, z. B. `YES`, `TRUNK_OPENED`, `PARKED`), Name des aktuell aktiven Ladestandort-Profils, API-Status (Ergebnis der letzten Abfrage, Diagnose), Letzter API-Abruf (Datum und Uhrzeit des letzten erfolgreichen Abrufs, Diagnose), Letzte Fahrzeugdaten (wann das Fahrzeug selbst zuletzt Daten an die Škoda-Server gemeldet hat, Diagnose), API-Rate-Limit bis (wann das Anfragekontingent nach einem Rate-Limit wieder verfügbar ist, Diagnose), Verbleibende API-Anfragen (Rest des Stundenkontingents laut letzter Antwort, mit den Attributen `limit` und `reset_at`, Diagnose), Aktuelles Abrufintervall (Minuten, normales oder Ladeintervall, Attribut `mode`, Diagnose) |
 | `binary_sensor` | Türen, Fenster, Kofferraum, Motorhaube, Beleuchtung, Zentralverriegelung, Laden, Ladekabel angesteckt, Ladekabel-Verriegelung, Fahrzeug an gespeichertem Ladestandort, Geparkt, nicht gesichert (siehe [Parkalarm](#parkalarm)) |
 | `device_tracker` | Parkposition (erscheint auf dem Karten-Dashboard; während der Fahrt unbekannt) |
 | `climate` | Standklimatisierung (an/aus, aktive Belüftung, Zieltemperatur) |
@@ -117,6 +117,17 @@ um die Verbindung wiederherzustellen, ohne den Verlauf der Entitäten zu verlier
 Die Integration nutzt ausschließlich die dokumentierten Endpunkte unter
 `https://public.api.connect.skoda-auto.cz/api/v1/vehicles/{vin}` und authentifiziert sich über den
 Header `X-API-Key`. Die Daten werden per Polling aktualisiert.
+
+### Sofortige Rückmeldung nach Befehlen
+
+Ein Befehl wird von der API nur *angenommen* (HTTP 202); das Fahrzeug führt ihn eventuell viel später
+aus, oder gar nicht, wenn es schläft. Damit die Oberfläche in der Zwischenzeit nicht unverändert
+aussieht, zeigen Klimaanlage, Ladeschalter, Ladegrenze und Lademodus nach einem angenommenen Befehl
+sofort den erwarteten Zustand, mit dem Attribut `pending: true`. Er wird ersetzt, sobald das Fahrzeug
+neuere Daten dieses Bereichs meldet (es gilt, was das Fahrzeug sagt, auch wenn es dem Befehl
+widerspricht), und nach 3 Minuten (Klimaanlage) bzw. 5 Minuten (die übrigen) verworfen, wenn sich das
+Fahrzeug nicht meldet. Ein von der API abgelehnter Befehl ändert nichts. Das kostet keine zusätzlichen
+Anfragen.
 
 ### Fahrzeug aufwecken
 

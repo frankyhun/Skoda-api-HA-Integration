@@ -20,6 +20,17 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 - Diagnostics verbergen de ontvangers van het parkeeralarm.
 
+## [0.3.1]
+
+### Toegevoegd
+
+- Sensor "Huidig pollinginterval" (diagnostisch): het interval in minuten waarmee het voertuig nu wordt gepolld (normaal of laadinterval, attribuut `mode`). Volgt een gewijzigde instelling direct.
+- Na een geaccepteerd commando tonen de airco, de laadschakelaar, de laadlimiet en de laadmodus direct de verwachte toestand (attribuut `pending: true`) in plaats van op het voertuig te wachten. Die wordt vervangen zodra het voertuig nieuwere gegevens van dat onderdeel meldt en na 3 minuten (airco) of 5 minuten (overige) verworpen zonder melding. Een geweigerd commando verandert niets. Geen extra verzoeken.
+
+### Gewijzigd
+
+- De sensoren "Laatste poll" en "Rate limit tot" heten nu "Laatste API-poll" en "API-rate limit tot" (weergavenamen en vertalingen; entiteits-ID's van bestaande installaties blijven gelijk).
+
 ## [0.3.0]
 
 ### Toegevoegd

@@ -121,16 +121,19 @@
         }
       },
       "last_poll": {
-        "name": "Lescht Ofro"
+        "name": "Lescht API-Ofro"
       },
       "car_last_seen": {
         "name": "Lescht Fahrzeugdaten"
       },
       "rate_limit_until": {
-        "name": "Rate-Limitt bis"
+        "name": "API-Rate-Limitt bis"
       },
       "api_requests_remaining": {
         "name": "Reschtlech API-Ufroen"
+      },
+      "poll_interval": {
+        "name": "Aktuellen Ofrointervall"
       }
     },
     "binary_sensor": {

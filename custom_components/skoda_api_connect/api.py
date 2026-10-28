@@ -143,16 +143,22 @@ class SkodaVehicle:
                 return None
         return node
 
+    def captured(self, section: str) -> datetime | None:
+        """Return when the vehicle itself last reported one section (e.g. "charging")."""
+        value = self.get(section, "carCapturedTimestamp")
+        if not isinstance(value, str):
+            return None
+        try:
+            return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC)
+        except ValueError:
+            return None
+
     def captured_at(self) -> dict[str, datetime]:
         """Return when the vehicle itself last reported each section, by attribute name."""
         stamps: dict[str, datetime] = {}
         for section, name in CAPTURED_SECTIONS.items():
-            value = self.get(section, "carCapturedTimestamp")
-            if isinstance(value, str):
-                try:
-                    stamps[name] = datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC)
-                except ValueError:
-                    continue
+            if (stamp := self.captured(section)) is not None:
+                stamps[name] = stamp
         return stamps
 
     def last_captured(self) -> datetime | None:

@@ -121,16 +121,19 @@
         }
       },
       "last_poll": {
-        "name": "Letzter Abruf"
+        "name": "Letzter API-Abruf"
       },
       "car_last_seen": {
         "name": "Letzte Fahrzeugdaten"
       },
       "rate_limit_until": {
-        "name": "Rate-Limit bis"
+        "name": "API-Rate-Limit bis"
       },
       "api_requests_remaining": {
         "name": "Verbleibende API-Anfragen"
+      },
+      "poll_interval": {
+        "name": "Aktuelles Abrufintervall"
       }
     },
     "binary_sensor": {

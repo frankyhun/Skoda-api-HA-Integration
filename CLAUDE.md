@@ -62,7 +62,10 @@ python -m compileall -q custom_components           # quick syntax check
 - `notify_targets` (list of `notify.<service>`, global) and `vehicle_intervals: {vin: {..., alert_grace}}`
   (minutes, default 5) configure the parking alert; changing them reschedules open incidents without a
   reload. Diagnostics redact `notify_targets`.
-- Every remote control goes through `coordinator.async_command(vin, coroutine)`.
+- Every remote control goes through `coordinator.async_command(vin, coroutine, expect)`. Pass an `Expectation(key, value,
+  section)` so the entity shows the expected state at once (`pending: true`): the entity sets `_expected_key` and
+  prefers `self._expected()` over the vehicle data. It is dropped when the vehicle reports a newer
+  `carCapturedTimestamp` of `section`, or after its `ttl`. Do not add it for settings stored only in Home Assistant.
 - Changing user-facing strings: update **all eight** translation files and copy `en.json` to
   `strings.json`.
 - Keep READMEs and changelogs in sync (English is the source; German README, Dutch README/CHANGELOG).

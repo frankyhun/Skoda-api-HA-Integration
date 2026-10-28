@@ -18,7 +18,7 @@ an options flow, reauthentication support, and a diagnostics download.
 
 | Platform | Entities |
 |---|---|
-| `sensor` | Battery level, charging power, charge limit (read-only), charging rate, remaining charging time, battery/total range, fuel level, AdBlue range, mileage, target temperature, address of the parking position, doors locked, reliable lock status and parking state (as reported by the API, e.g. `YES`, `TRUNK_OPENED`, `PARKED`), name of the charging location profile currently active, API status (result of the last poll, diagnostic), last poll (date and time of the last successful poll, diagnostic), last vehicle data (when the vehicle itself last reported data to the Škoda servers, diagnostic), rate limit until (when the request quota is available again after a rate limit, diagnostic), API requests remaining (left of the hourly quota according to the last response, with the attributes `limit` and `reset_at`, diagnostic) |
+| `sensor` | Battery level, charging power, charge limit (read-only), charging rate, remaining charging time, battery/total range, fuel level, AdBlue range, mileage, target temperature, address of the parking position, doors locked, reliable lock status and parking state (as reported by the API, e.g. `YES`, `TRUNK_OPENED`, `PARKED`), name of the charging location profile currently active, API status (result of the last poll, diagnostic), last API poll (date and time of the last successful poll, diagnostic), last vehicle data (when the vehicle itself last reported data to the Škoda servers, diagnostic), API rate limit until (when the request quota is available again after a rate limit, diagnostic), API requests remaining (left of the hourly quota according to the last response, with the attributes `limit` and `reset_at`, diagnostic), current polling interval (minutes, normal or charging interval, attribute `mode`, diagnostic) |
 | `binary_sensor` | Doors, windows, trunk, bonnet, lights, central locking, charging, charging cable plugged in, charging cable lock, vehicle at saved charging location, parked unsecured (see [Parking alert](#parking-alert)) |
 | `device_tracker` | Parking position (shows on the Map dashboard; unknown while driving) |
 | `climate` | Remote air conditioning (on/off, active ventilation, target temperature) |
@@ -115,6 +115,16 @@ without losing entity history.
 The integration only uses the documented endpoints under
 `https://public.api.connect.skoda-auto.cz/api/v1/vehicles/{vin}` and authenticates with the
 `X-API-Key` header. Data is refreshed by polling.
+
+### Immediate feedback after commands
+
+A command is only *accepted* by the API (HTTP 202); the vehicle may execute it much later, or never if
+it is asleep. So that the interface does not look unchanged in the meantime, the air conditioning, the
+charging switch, the charge limit and the charge mode show the expected state right after an accepted
+command, with the attribute `pending: true`. It is replaced as soon as the vehicle reports newer data
+of that section (what the vehicle says wins, even if it contradicts the command), and dropped after
+3 minutes (air conditioning) or 5 minutes (the others) if the vehicle does not report. A command the
+API rejects changes nothing. This costs no additional requests.
 
 ### Waking a vehicle
 
