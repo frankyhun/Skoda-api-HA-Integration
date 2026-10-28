@@ -7,6 +7,14 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+### Toegevoegd
+
+- Spaanse en Luxemburgse vertalingen (met dank aan janreimen), inclusief de entiteiten voor het wekken.
+
+### Opgelost
+
+- De Luxemburgse vertaling heet nu `lb.json`; Home Assistant gebruikt de taalcode `lb`, dus `lu.json` werd nooit geladen.
+
 ## [0.3.0]
 
 ### Toegevoegd

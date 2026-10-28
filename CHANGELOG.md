@@ -7,6 +7,14 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Spanish and Luxembourgish translations (thanks to janreimen), including the wake-up entities.
+
+### Fixed
+
+- The Luxembourgish translation is now `lb.json`; Home Assistant uses the language code `lb`, so `lu.json` was never loaded.
+
 ## [0.3.0]
 
 ### Added
