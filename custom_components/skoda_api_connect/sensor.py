@@ -265,7 +265,7 @@ class SkodaApiStatusSensor(SkodaVehicleEntity, SensorEntity):
     _attr_device_class = SensorDeviceClass.ENUM
     _attr_options = POLL_STATUSES
     _attr_entity_category = EntityCategory.DIAGNOSTIC
-    _attr_icon = "mdi:car-connected"
+    _attr_icon = "mdi:api"
 
     def __init__(self, coordinator: SkodaDataUpdateCoordinator, vin: str) -> None:
         """Initialize the sensor."""
