@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import Any
 
 from homeassistant.components.climate import (
@@ -14,7 +15,8 @@ from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .coordinator import SkodaConfigEntry, SkodaDataUpdateCoordinator
+from .const import EXPECTED_CLIMATE_MINUTES
+from .coordinator import Expectation, SkodaConfigEntry, SkodaDataUpdateCoordinator
 from .entity import SkodaVehicleEntity
 
 DEFAULT_TARGET_TEMPERATURE = 21.0
@@ -48,6 +50,7 @@ class SkodaClimate(SkodaVehicleEntity, ClimateEntity):
     """Represents the remote air conditioning of a Škoda vehicle."""
 
     _attr_translation_key = "air_conditioning"
+    _expected_key = "hvac_mode"
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT_COOL, HVACMode.FAN_ONLY]
     _attr_supported_features = (
@@ -87,6 +90,8 @@ class SkodaClimate(SkodaVehicleEntity, ClimateEntity):
     @property
     def hvac_mode(self) -> HVACMode:
         """Return the current HVAC mode."""
+        if (expected := self._expected()) is not None:
+            return expected
         state = self._state
         if state in ("COOLING", "HEATING", "HEATING_AUXILIARY"):
             return HVACMode.HEAT_COOL
@@ -97,6 +102,9 @@ class SkodaClimate(SkodaVehicleEntity, ClimateEntity):
     @property
     def hvac_action(self) -> HVACAction | None:
         """Return the current HVAC action."""
+        if (expected := self._expected()) is not None:
+            # Only the on/off state is known until the vehicle reports what it is doing.
+            return {HVACMode.OFF: HVACAction.OFF, HVACMode.FAN_ONLY: HVACAction.FAN}.get(expected)
         if self._ventilating and self._state in (None, "OFF"):
             return HVACAction.FAN
         return _STATE_TO_HVAC_ACTION.get(self._state)
@@ -138,7 +146,16 @@ class SkodaClimate(SkodaVehicleEntity, ClimateEntity):
             command = api.start_air_conditioning(
                 self.vin, self.target_temperature or DEFAULT_TARGET_TEMPERATURE
             )
-        await self.coordinator.async_command(self.vin, command)
+        await self.coordinator.async_command(
+            self.vin,
+            command,
+            Expectation(
+                "hvac_mode",
+                hvac_mode,
+                "airConditioning",
+                timedelta(minutes=EXPECTED_CLIMATE_MINUTES),
+            ),
+        )
 
     async def async_turn_on(self) -> None:
         """Turn the air conditioning on."""

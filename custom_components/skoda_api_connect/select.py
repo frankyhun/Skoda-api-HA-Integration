@@ -7,7 +7,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .api import SkodaVehicle
-from .coordinator import SkodaConfigEntry, SkodaDataUpdateCoordinator
+from .coordinator import Expectation, SkodaConfigEntry, SkodaDataUpdateCoordinator
 from .entity import SkodaVehicleEntity
 
 
@@ -33,6 +33,7 @@ class SkodaChargeModeSelect(SkodaVehicleEntity, SelectEntity):
     """Represents the preferred charge mode (e.g. MANUAL, TIMER)."""
 
     _attr_translation_key = "charge_mode"
+    _expected_key = "charge_mode"
 
     def __init__(self, coordinator: SkodaDataUpdateCoordinator, vin: str) -> None:
         """Initialize the select entity."""
@@ -47,11 +48,14 @@ class SkodaChargeModeSelect(SkodaVehicleEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         """Return the active charge mode."""
+        if (expected := self._expected()) is not None:
+            return expected
         return self.vehicle.get("charging", "settings", "preferredChargeMode")
 
     async def async_select_option(self, option: str) -> None:
         """Change the charge mode."""
         await self.coordinator.async_command(
             self.vin,
-            self.coordinator.api.set_charge_mode(self.vin, option)
+            self.coordinator.api.set_charge_mode(self.vin, option),
+            Expectation("charge_mode", option, "charging"),
         )

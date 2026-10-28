@@ -105,16 +105,19 @@
         }
       },
       "last_poll": {
-        "name": "Laatste poll"
+        "name": "Laatste API-poll"
       },
       "car_last_seen": {
         "name": "Laatste voertuiggegevens"
       },
       "rate_limit_until": {
-        "name": "Rate limit tot"
+        "name": "API-rate limit tot"
       },
       "api_requests_remaining": {
         "name": "Resterende API-verzoeken"
+      },
+      "poll_interval": {
+        "name": "Huidig pollinginterval"
       }
     },
     "binary_sensor": {

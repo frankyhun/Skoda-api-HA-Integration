@@ -105,16 +105,19 @@
         }
       },
       "last_poll": {
-        "name": "Posledný dopyt"
+        "name": "Posledný dopyt na API"
       },
       "car_last_seen": {
         "name": "Posledné údaje vozidla"
       },
       "rate_limit_until": {
-        "name": "Limit požiadaviek do"
+        "name": "Limit požiadaviek API do"
       },
       "api_requests_remaining": {
         "name": "Zostávajúce požiadavky API"
+      },
+      "poll_interval": {
+        "name": "Aktuálny interval dopytovania"
       }
     },
     "binary_sensor": {
