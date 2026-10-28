@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import KEY_PLUGGED_IN
-from .coordinator import SkodaConfigEntry, SkodaDataUpdateCoordinator
+from .coordinator import Expectation, SkodaConfigEntry, SkodaDataUpdateCoordinator
 from .entity import SkodaVehicleEntity
 
 
@@ -35,6 +35,7 @@ class SkodaChargingSwitch(SkodaVehicleEntity, SwitchEntity):
     """Starts and stops charging."""
 
     _attr_translation_key = "charging"
+    _expected_key = "charging"
 
     def __init__(self, coordinator: SkodaDataUpdateCoordinator, vin: str) -> None:
         """Initialize the switch."""
@@ -44,19 +45,25 @@ class SkodaChargingSwitch(SkodaVehicleEntity, SwitchEntity):
     @property
     def is_on(self) -> bool | None:
         """Return true if the vehicle is currently charging."""
+        if (expected := self._expected()) is not None:
+            return expected
         state = self.vehicle.get("charging", "status", "state")
         return None if state is None else state == "CHARGING"
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Start charging."""
         await self.coordinator.async_command(
-            self.vin, self.coordinator.api.start_charging(self.vin)
+            self.vin,
+            self.coordinator.api.start_charging(self.vin),
+            Expectation("charging", True, "charging"),
         )
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Stop charging."""
         await self.coordinator.async_command(
-            self.vin, self.coordinator.api.stop_charging(self.vin)
+            self.vin,
+            self.coordinator.api.stop_charging(self.vin),
+            Expectation("charging", False, "charging"),
         )
 
 

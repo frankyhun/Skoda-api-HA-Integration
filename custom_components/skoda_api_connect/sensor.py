@@ -15,6 +15,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import (
     PERCENTAGE,
+    UnitOfTime,
     UnitOfLength,
     UnitOfPower,
     UnitOfSpeed,
@@ -208,6 +209,7 @@ async def async_setup_entry(
         entities.append(SkodaCarLastSeenSensor(coordinator, vin))
         entities.append(SkodaRateLimitUntilSensor(coordinator, vin))
         entities.append(SkodaApiRequestsRemainingSensor(coordinator, vin))
+        entities.append(SkodaPollIntervalSensor(coordinator, vin))
     async_add_entities(entities)
 
 
@@ -416,3 +418,35 @@ class SkodaApiRequestsRemainingSensor(SkodaVehicleEntity, SensorEntity):
         if info.reset_at is not None:
             attributes["reset_at"] = info.reset_at
         return attributes
+
+
+class SkodaPollIntervalSensor(SkodaVehicleEntity, SensorEntity):
+    """Shows the polling interval the vehicle currently uses, in minutes."""
+
+    _attr_translation_key = "poll_interval"
+    _attr_device_class = SensorDeviceClass.DURATION
+    _attr_native_unit_of_measurement = UnitOfTime.MINUTES
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_icon = "mdi:timer-cog-outline"
+
+    def __init__(self, coordinator: SkodaDataUpdateCoordinator, vin: str) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, vin)
+        self._attr_unique_id = f"{vin}_poll_interval"
+
+    @property
+    def available(self) -> bool:
+        """Stay available while polling fails, which is when the interval matters."""
+        return True
+
+    @property
+    def native_value(self) -> int:
+        """Return the interval of the vehicle's current state (normal or charging)."""
+        kind = self.coordinator.active_interval_kind(self.vin)
+        return self.coordinator.interval_minutes(self.vin, kind)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return which of the two configured intervals is in use."""
+        return {"mode": self.coordinator.active_interval_kind(self.vin)}

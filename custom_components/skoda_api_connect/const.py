@@ -45,4 +45,10 @@ POLL_INTERVAL_NUMBER_MAX_MINUTES: Final = 120
 # new state shows up without waiting for the next poll.
 POST_COMMAND_REFRESH_DELAY: Final = 30
 
+# After an accepted command (HTTP 202) the entity shows the expected state until the vehicle
+# reports newer data of that section, but no longer than this: the API only says "accepted",
+# not "done", and a sleeping vehicle may never execute the command.
+EXPECTED_STATE_MINUTES: Final = 5
+EXPECTED_CLIMATE_MINUTES: Final = 3
+
 MANUFACTURER: Final = "Škoda"

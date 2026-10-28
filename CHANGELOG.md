@@ -7,6 +7,17 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.3.1]
+
+### Added
+
+- Sensor "Current polling interval" (diagnostic): the interval in minutes the vehicle is polled at right now (normal or charging interval, attribute `mode`). It follows a changed setting at once.
+- After an accepted command the air conditioning, the charging switch, the charge limit and the charge mode show the expected state immediately (attribute `pending: true`) instead of waiting for the vehicle. It is replaced when the vehicle reports newer data of that section and dropped after 3 minutes (air conditioning) or 5 minutes (others) without a report. A rejected command changes nothing. No additional requests.
+
+### Changed
+
+- Renamed the sensors "Last poll" to "Last API poll" and "Rate limit until" to "API rate limit until" (display names and translations; entity IDs of existing installations stay the same).
+
 ## [0.3.0]
 
 ### Added

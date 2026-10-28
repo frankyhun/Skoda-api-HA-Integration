@@ -15,7 +15,7 @@ externe client-bibliotheek.
 
 | Platform | Entiteiten |
 |---|---|
-| `sensor` | Accuniveau, laadvermogen, laadlimiet (alleen lezen), laadsnelheid, resterende laadtijd, accu-/totaalbereik, brandstofniveau, AdBlue-bereik, kilometerstand, doeltemperatuur, adres van de parkeerpositie, naam van het actieve laadlocatieprofiel, API-status (resultaat van de laatste poll, diagnostisch), laatste poll (datum en tijd van de laatste geslaagde poll, diagnostisch), laatste voertuiggegevens (wanneer het voertuig zelf voor het laatst gegevens naar de Škoda-servers stuurde, diagnostisch) |
+| `sensor` | Accuniveau, laadvermogen, laadlimiet (alleen lezen), laadsnelheid, resterende laadtijd, accu-/totaalbereik, brandstofniveau, AdBlue-bereik, kilometerstand, doeltemperatuur, adres van de parkeerpositie, naam van het actieve laadlocatieprofiel, API-status (resultaat van de laatste poll, diagnostisch), laatste API-poll (datum en tijd van de laatste geslaagde poll, diagnostisch), huidig pollinginterval (minuten, normaal of laadinterval, attribuut `mode`, diagnostisch), laatste voertuiggegevens (wanneer het voertuig zelf voor het laatst gegevens naar de Škoda-servers stuurde, diagnostisch) |
 | `binary_sensor` | Deuren, ramen, kofferbak, motorkap, verlichting, centrale vergrendeling, laden, laadkabel aangesloten, vergrendeling laadkabel, voertuig op opgeslagen laadlocatie |
 | `device_tracker` | Parkeerpositie (zichtbaar op de kaart; onbekend tijdens het rijden) |
 | `climate` | Airco op afstand (aan/uit, actieve ventilatie, doeltemperatuur) |
@@ -103,6 +103,16 @@ aan en voer die in.
 De integratie gebruikt uitsluitend de gedocumenteerde endpoints onder
 `https://public.api.connect.skoda-auto.cz/api/v1/vehicles/{vin}` en authenticeert met de
 `X-API-Key`-header.
+
+### Directe terugkoppeling na commando's
+
+Een commando wordt door de API alleen *geaccepteerd* (HTTP 202); het voertuig voert het misschien veel
+later uit, of nooit als het slaapt. Zodat de interface intussen niet onveranderd lijkt, tonen de airco,
+de laadschakelaar, de laadlimiet en de laadmodus na een geaccepteerd commando direct de verwachte
+toestand, met het attribuut `pending: true`. Die wordt vervangen zodra het voertuig nieuwere gegevens van
+dat onderdeel meldt (wat het voertuig zegt wint, ook als het het commando tegenspreekt), en na 3 minuten
+(airco) of 5 minuten (de overige) verworpen als het voertuig zich niet meldt. Een door de API geweigerd
+commando verandert niets. Dit kost geen extra verzoeken.
 
 ### Voertuig wakker maken
 
