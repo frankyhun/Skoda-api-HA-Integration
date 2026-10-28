@@ -47,9 +47,16 @@
           "scan_interval": "Interval dotazování (minuty)",
           "charging_scan_interval": "Interval dotazování při nabíjení (minuty)",
           "plugged_in_fast_polling": "Použít interval nabíjení i při zapojeném kabelu",
-          "read_only": "Režim pouze pro čtení (vypne veškeré dálkové ovládání)"
+          "read_only": "Režim pouze pro čtení (vypne veškeré dálkové ovládání)",
+          "notify_targets": "Příjemci upozornění na parkování"
+        },
+        "data_description": {
+          "notify_targets": "Služby notify, které dostanou kritické upozornění, když vozidlo parkuje, ale není zamčené a zavřené, např. notify.mobile_app_muj_telefon. Ponechte prázdné, pokud upozornění nechcete. Prodleva se nastavuje pro každé vozidlo posuvníkem „Prodleva upozornění na parkování“."
         }
       }
+    },
+    "error": {
+      "unknown_notify_target": "Služba notify s názvem {target} neexistuje."
     }
   },
   "entity": {
@@ -89,6 +96,15 @@
       },
       "location_address": {
         "name": "Adresa"
+      },
+      "doors_locked": {
+        "name": "Dveře zamčené"
+      },
+      "reliable_lock_status": {
+        "name": "Spolehlivý stav zamčení"
+      },
+      "parking_state": {
+        "name": "Stav parkování"
       },
       "charging_location_profile": {
         "name": "Místo nabíjení"
@@ -147,6 +163,14 @@
       },
       "unlocked": {
         "name": "Centrální zamykání"
+      },
+      "parked_unsecured": {
+        "name": "Zaparkováno, nezabezpečeno",
+        "state_attributes": {
+          "reasons": {
+            "name": "Důvody"
+          }
+        }
       }
     },
     "button": {
@@ -187,6 +211,9 @@
       },
       "auto_wake": {
         "name": "Probudit nabíjející vozidlo po (0 = vypnuto)"
+      },
+      "parking_alert_grace": {
+        "name": "Prodleva upozornění na parkování"
       }
     },
     "select": {

@@ -70,5 +70,6 @@ async def test_entities_created(hass: HomeAssistant, mock_entry, mock_get_vehicl
     await hass.async_block_till_done()
     states = hass.states.async_all("number")
     ids = {s.entity_id for s in states}
-    assert len(ids) == 4  # charge limit + idle/charging interval + auto wake
+    # charge limit + idle/charging interval + auto wake + parking alert grace period
+    assert len(ids) == 5
     assert any("charging" in i for i in ids)

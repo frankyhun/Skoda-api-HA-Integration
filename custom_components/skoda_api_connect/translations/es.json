@@ -47,9 +47,16 @@
           "scan_interval": "Intervalo de consulta (minutos)",
           "charging_scan_interval": "Intervalo de consulta durante la carga (minutos)",
           "plugged_in_fast_polling": "Usar también el intervalo de carga cuando el cable esté conectado",
-          "read_only": "Modo de solo lectura (desactivar todos los controles remotos)"
+          "read_only": "Modo de solo lectura (desactivar todos los controles remotos)",
+          "notify_targets": "Destinatarios de la alerta de aparcamiento"
+        },
+        "data_description": {
+          "notify_targets": "Servicios de notificación que reciben una alerta crítica cuando un vehículo está aparcado pero no está bloqueado y cerrado, p. ej. notify.mobile_app_mi_telefono. Déjalo vacío para no recibir alertas. El retraso se ajusta por vehículo con el control deslizante «Tiempo de espera de la alerta de aparcamiento»."
         }
       }
+    },
+    "error": {
+      "unknown_notify_target": "No existe ningún servicio de notificación llamado {target}."
     }
   },
   "entity": {
@@ -89,6 +96,15 @@
       },
       "location_address": {
         "name": "Dirección"
+      },
+      "doors_locked": {
+        "name": "Puertas bloqueadas"
+      },
+      "reliable_lock_status": {
+        "name": "Estado de bloqueo fiable"
+      },
+      "parking_state": {
+        "name": "Estado de aparcamiento"
       },
       "charging_location_profile": {
         "name": "Ubicación de carga"
@@ -144,6 +160,14 @@
       },
       "unlocked": {
         "name": "Cierre centralizado"
+      },
+      "parked_unsecured": {
+        "name": "Aparcado sin asegurar",
+        "state_attributes": {
+          "reasons": {
+            "name": "Motivos"
+          }
+        }
       }
     },
     "button": {
@@ -178,6 +202,9 @@
       },
       "poll_interval_charging": {
         "name": "Intervalo de consulta durante la carga"
+      },
+      "parking_alert_grace": {
+        "name": "Tiempo de espera de la alerta de aparcamiento"
       }
     },
     "select": {

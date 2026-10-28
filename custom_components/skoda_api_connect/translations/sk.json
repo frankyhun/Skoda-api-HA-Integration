@@ -47,9 +47,16 @@
           "scan_interval": "Interval dopytovania (minúty)",
           "charging_scan_interval": "Interval dopytovania pri nabíjaní (minúty)",
           "plugged_in_fast_polling": "Použiť interval nabíjania aj pri zapojenom kábli",
-          "read_only": "Režim iba na čítanie (vypne všetko diaľkové ovládanie)"
+          "read_only": "Režim iba na čítanie (vypne všetko diaľkové ovládanie)",
+          "notify_targets": "Príjemcovia upozornenia na parkovanie"
+        },
+        "data_description": {
+          "notify_targets": "Služby notify, ktoré dostanú kritické upozornenie, keď vozidlo parkuje, ale nie je zamknuté a zatvorené, napr. notify.mobile_app_moj_telefon. Nechajte prázdne, ak upozornenia nechcete. Oneskorenie sa nastavuje pre každé vozidlo posuvníkom „Oneskorenie upozornenia na parkovanie“."
         }
       }
+    },
+    "error": {
+      "unknown_notify_target": "Služba notify s názvom {target} neexistuje."
     }
   },
   "entity": {
@@ -89,6 +96,15 @@
       },
       "location_address": {
         "name": "Adresa"
+      },
+      "doors_locked": {
+        "name": "Dvere zamknuté"
+      },
+      "reliable_lock_status": {
+        "name": "Spoľahlivý stav zamknutia"
+      },
+      "parking_state": {
+        "name": "Stav parkovania"
       },
       "charging_location_profile": {
         "name": "Miesto nabíjania"
@@ -147,6 +163,14 @@
       },
       "unlocked": {
         "name": "Centrálne zamykanie"
+      },
+      "parked_unsecured": {
+        "name": "Zaparkované, nezabezpečené",
+        "state_attributes": {
+          "reasons": {
+            "name": "Dôvody"
+          }
+        }
       }
     },
     "button": {
@@ -187,6 +211,9 @@
       },
       "auto_wake": {
         "name": "Zobudiť nabíjajúce vozidlo po (0 = vypnuté)"
+      },
+      "parking_alert_grace": {
+        "name": "Oneskorenie upozornenia na parkovanie"
       }
     },
     "select": {

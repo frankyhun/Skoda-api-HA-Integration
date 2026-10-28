@@ -31,9 +31,11 @@ from .const import (
     CONF_CHARGING_SCAN_INTERVAL,
     CONF_PLUGGED_IN_FAST_POLLING,
     CONF_VEHICLE_INTERVALS,
+    DEFAULT_ALERT_GRACE_MINUTES,
     DEFAULT_CHARGING_SCAN_INTERVAL_MINUTES,
     DEFAULT_SCAN_INTERVAL_MINUTES,
     DOMAIN,
+    KEY_ALERT_GRACE,
     KEY_AUTO_WAKE,
     KEY_PLUGGED_IN,
     MIN_AUTO_WAKE_MINUTES,
@@ -226,6 +228,11 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         """Return after how many minutes without vehicle data a charging car is woken (0 = off)."""
         overrides = self.config_entry.options.get(CONF_VEHICLE_INTERVALS, {})
         return int(overrides.get(vin, {}).get(KEY_AUTO_WAKE, 0))
+
+    def alert_grace_minutes(self, vin: str) -> int:
+        """Return how long a parked vehicle may stay unsecured before the alert is sent."""
+        overrides = self.config_entry.options.get(CONF_VEHICLE_INTERVALS, {})
+        return int(overrides.get(vin, {}).get(KEY_ALERT_GRACE, DEFAULT_ALERT_GRACE_MINUTES))
 
     def _interval_for(self, vin: str) -> timedelta:
         kind = "charging" if self.uses_charging_interval(vin) else "idle"

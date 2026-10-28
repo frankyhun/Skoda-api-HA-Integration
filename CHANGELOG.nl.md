@@ -7,6 +7,19 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+## [0.4.0]
+
+### Toegevoegd
+
+- Parkeeralarm: een kritieke melding als een voertuig geparkeerd staat maar niet beveiligd is (betrouwbare vergrendelingsstatus niet `LOCKED`, deuren niet `CLOSED`, deuren vergrendeld niet `YES`, vergrendeld niet `YES` of ramen niet `CLOSED`; onbekende waarden tellen als niet beveiligd, ramen `UNSUPPORTED` wordt overgeslagen). De notify-services die hem krijgen kies je in de opties (meerdere mogelijk); Companion-app-ontvangers krijgen hem als kritieke melding. Eén melding per incident; kost geen API-verzoeken.
+- Number "Wachttijd parkeeralarm" per voertuig (schuifregelaar, 0-30 minuten, standaard 5): hoe lang een voertuig onbeveiligd mag blijven voordat de melding wordt verstuurd.
+- Binaire sensor "Geparkeerd, niet beveiligd" met de mislukte controles in het attribuut `reasons`.
+- Sensors "Deuren vergrendeld", "Betrouwbare vergrendelingsstatus" en "Parkeerstatus", met de waarden zoals de API ze meldt.
+
+### Gewijzigd
+
+- Diagnostics verbergen de ontvangers van het parkeeralarm.
+
 ## [0.3.0]
 
 ### Toegevoegd

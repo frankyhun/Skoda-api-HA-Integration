@@ -181,6 +181,26 @@ SENSOR_DESCRIPTIONS: tuple[SkodaSensorEntityDescription, ...] = (
         value_fn=_path("parkingPosition", "formattedAddress"),
         exists_fn=_exists("parkingPosition", "formattedAddress"),
     ),
+    # The lock and parking states are shown as reported (e.g. YES, TRUNK_OPENED, PARKED);
+    # the API may add values, so they are plain text rather than enum sensors.
+    SkodaSensorEntityDescription(
+        key="doors_locked",
+        translation_key="doors_locked",
+        value_fn=_path("status", "overall", "doorsLocked"),
+        exists_fn=_exists("status", "overall", "doorsLocked"),
+    ),
+    SkodaSensorEntityDescription(
+        key="reliable_lock_status",
+        translation_key="reliable_lock_status",
+        value_fn=_path("status", "overall", "reliableLockStatus"),
+        exists_fn=_exists("status", "overall", "reliableLockStatus"),
+    ),
+    SkodaSensorEntityDescription(
+        key="parking_state",
+        translation_key="parking_state",
+        value_fn=_path("parkingPosition", "state"),
+        exists_fn=_exists("parkingPosition", "state"),
+    ),
     SkodaSensorEntityDescription(
         key="charging_location_profile",
         translation_key="charging_location_profile",

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -16,6 +17,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .api import SkodaVehicle
 from .coordinator import SkodaConfigEntry, SkodaDataUpdateCoordinator
 from .entity import SkodaVehicleEntity
+from .parking_alert import is_parked, unsecured_reasons
 
 _UNKNOWN = ("UNKNOWN", "UNSUPPORTED")
 
@@ -122,6 +124,22 @@ BINARY_SENSOR_DESCRIPTIONS: tuple[SkodaBinarySensorEntityDescription, ...] = (
 )
 
 
+def _parked_unsecured(vehicle: SkodaVehicle) -> bool | None:
+    """Return the parking alert condition; unknown while the parking state is not reported."""
+    if is_parked(vehicle) is None:
+        return None
+    return bool(unsecured_reasons(vehicle))
+
+
+PARKED_UNSECURED_DESCRIPTION = SkodaBinarySensorEntityDescription(
+    key="parked_unsecured",
+    translation_key="parked_unsecured",
+    device_class=BinarySensorDeviceClass.PROBLEM,
+    value_fn=_parked_unsecured,
+    exists_fn=_reported("parkingPosition", "state"),
+)
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: SkodaConfigEntry,
@@ -129,12 +147,18 @@ async def async_setup_entry(
 ) -> None:
     """Set up Škoda API Connect binary sensors from a config entry."""
     coordinator = entry.runtime_data
-    async_add_entities(
+    entities: list[SkodaBinarySensor] = [
         SkodaBinarySensor(coordinator, vin, description)
         for vin, vehicle in coordinator.data.vehicles.items()
         for description in BINARY_SENSOR_DESCRIPTIONS
         if description.exists_fn(vehicle)
+    ]
+    entities.extend(
+        SkodaParkedUnsecuredSensor(coordinator, vin, PARKED_UNSECURED_DESCRIPTION)
+        for vin, vehicle in coordinator.data.vehicles.items()
+        if PARKED_UNSECURED_DESCRIPTION.exists_fn(vehicle)
     )
+    async_add_entities(entities)
 
 
 class SkodaBinarySensor(SkodaVehicleEntity, BinarySensorEntity):
@@ -157,3 +181,12 @@ class SkodaBinarySensor(SkodaVehicleEntity, BinarySensorEntity):
     def is_on(self) -> bool | None:
         """Return true if the condition described is active."""
         return self.entity_description.value_fn(self.vehicle)
+
+
+class SkodaParkedUnsecuredSensor(SkodaBinarySensor):
+    """On while the vehicle is parked but not secured - the parking alert condition."""
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return what is not secured."""
+        return {"reasons": unsecured_reasons(self.vehicle)}

@@ -15,13 +15,13 @@ externe client-bibliotheek.
 
 | Platform | Entiteiten |
 |---|---|
-| `sensor` | Accuniveau, laadvermogen, laadlimiet (alleen lezen), laadsnelheid, resterende laadtijd, accu-/totaalbereik, brandstofniveau, AdBlue-bereik, kilometerstand, doeltemperatuur, adres van de parkeerpositie, naam van het actieve laadlocatieprofiel, API-status (resultaat van de laatste poll, diagnostisch), laatste poll (datum en tijd van de laatste geslaagde poll, diagnostisch), laatste voertuiggegevens (wanneer het voertuig zelf voor het laatst gegevens naar de Škoda-servers stuurde, diagnostisch) |
-| `binary_sensor` | Deuren, ramen, kofferbak, motorkap, verlichting, centrale vergrendeling, laden, laadkabel aangesloten, vergrendeling laadkabel, voertuig op opgeslagen laadlocatie |
+| `sensor` | Accuniveau, laadvermogen, laadlimiet (alleen lezen), laadsnelheid, resterende laadtijd, accu-/totaalbereik, brandstofniveau, AdBlue-bereik, kilometerstand, doeltemperatuur, adres van de parkeerpositie, deuren vergrendeld, betrouwbare vergrendelingsstatus en parkeerstatus (zoals de API ze meldt, bijv. `YES`, `TRUNK_OPENED`, `PARKED`), naam van het actieve laadlocatieprofiel, API-status (resultaat van de laatste poll, diagnostisch), laatste poll (datum en tijd van de laatste geslaagde poll, diagnostisch), laatste voertuiggegevens (wanneer het voertuig zelf voor het laatst gegevens naar de Škoda-servers stuurde, diagnostisch) |
+| `binary_sensor` | Deuren, ramen, kofferbak, motorkap, verlichting, centrale vergrendeling, laden, laadkabel aangesloten, vergrendeling laadkabel, voertuig op opgeslagen laadlocatie, geparkeerd, niet beveiligd (zie [Parkeeralarm](#parkeeralarm)) |
 | `device_tracker` | Parkeerpositie (zichtbaar op de kaart; onbekend tijdens het rijden) |
 | `climate` | Airco op afstand (aan/uit, actieve ventilatie, doeltemperatuur) |
 | `switch` | Laden starten/stoppen |
 | `button` | API nu opvragen (vraagt de MyŠkoda-API direct op voor het voertuig; kost één verzoek van het API-quotum en wordt geweigerd tijdens een rate limit), Voertuig wakker maken (zie hieronder) |
-| `number` | Laadlimiet (doel-laadniveau), pollinginterval per voertuig (normaal / tijdens laden), automatisch wekken van een ladend voertuig |
+| `number` | Laadlimiet (doel-laadniveau), pollinginterval per voertuig (normaal / tijdens laden), automatisch wekken van een ladend voertuig, wachttijd parkeeralarm |
 | `select` | Laadmodus |
 
 Sensoren en bediening worden alleen aangemaakt voor de gegevens en acties die jouw voertuig
@@ -88,6 +88,7 @@ vernieuwd, of je wilt een pre-release uitproberen), voeg ze dan als aangepaste r
    De API heeft geen voertuiglijst, dus de VIN's moeten handmatig worden ingevoerd.
 4. Via **Configureren** wijzig je het pollinginterval (3-1440 minuten, standaard 10) of zet je
    de alleen-lezen-modus aan. Optioneel gebruik je het laadinterval ook zolang de laadkabel is aangesloten.
+   Daar kies je ook de notify-services die het [parkeeralarm](#parkeeralarm) krijgen.
 
 Je kunt de API-sleutel (of de VIN's) op elk moment vervangen - vóór het verlopen of nadat je een nieuwe
 hebt aangemaakt - via **Instellingen → Apparaten & services → Škoda API Connect → ⋮ → Opnieuw configureren**.
@@ -128,6 +129,44 @@ na 30 seconden meteen).
 
 De schakelaar **Snel pollen als kabel is aangesloten** (categorie configuratie) doet hetzelfde per voertuig
 en overschrijft voor dat voertuig de algemene optie.
+
+### Parkeeralarm
+
+De integratie kan een kritieke melding sturen als een voertuig geparkeerd staat
+(`parkingPosition.state` is `PARKED`) maar een van deze voorwaarden geldt:
+
+- Betrouwbare vergrendelingsstatus is niet `LOCKED`
+- Deuren is niet `CLOSED`
+- Deuren vergrendeld is niet `YES`
+- Vergrendeld is niet `YES`
+- Ramen is niet `CLOSED` (overgeslagen als de API `UNSUPPORTED` meldt, dus geen elektrische ramen)
+
+Een waarde die als `UNKNOWN` wordt gemeld of in het antwoord ontbreekt, telt ook als niet beveiligd.
+
+Om het aan te zetten open je **Configureren** en kies je een of meer **Ontvangers van het
+parkeeralarm**, bijvoorbeeld `notify.mobile_app_mijn_telefoon`. De lijst toont je bestaande
+notify-services; je kunt ook een naam typen. Leeg laten voor geen meldingen. De ontvangers gelden
+voor alle voertuigen van de integratie.
+
+De number **Wachttijd parkeeralarm** van elk voertuig (een schuifregelaar van 0 tot 30 minuten,
+standaard 5, configuratiecategorie) bepaalt hoe lang het voertuig onbeveiligd mag blijven voordat de
+melding wordt verstuurd; bij 0 meteen. De tijd loopt vanaf de eerste poll die het probleem toont, en
+de melding wordt alleen verstuurd als de laatste poll het nog toont. De toestand is alleen bij elke
+poll bekend, dus de melding kan tot één pollinginterval later komen dan de wachttijd alleen doet
+vermoeden. Gegevens die van vóór een herstart zijn opgeslagen, geven nooit een melding; het voertuig
+moet eerst gepold worden.
+
+Per incident wordt één melding verstuurd. Zodra een poll het voertuig beveiligd (of niet meer
+geparkeerd) toont, begint het volgende probleem een nieuw incident. De binaire sensor
+**Geparkeerd, niet beveiligd** toont dezelfde voorwaarde, met de mislukte controles in het attribuut
+`reasons`, voor dashboards en je eigen automatiseringen.
+
+Naar Companion-app-ontvangers (`notify.mobile_app_*`) gaat de melding als kritiek: op iOS klinkt hij
+ook in stille modus en Focus, op Android gebruikt hij het alarmkanaal. Andere notify-services krijgen
+een gewone melding. De tekst van de melding is Engels.
+
+De melding leest alleen gegevens die de polls al hebben opgehaald en kost dus geen verzoeken van het
+API-quotum.
 
 ### Rate limits
 

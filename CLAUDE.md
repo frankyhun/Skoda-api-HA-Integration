@@ -14,7 +14,10 @@ Default branch: `main`. Unofficial project - not affiliated with Škoda Auto.
   - `coordinator.py` - `SkodaDataUpdateCoordinator`: per-vehicle polling schedule, rate-limit backoff,
     `async_command()` (read-only check, error mapping, forced single refresh of the vehicle after 30 s)
   - `config_flow.py` - API key + VIN list (comma separated), reauth and reconfigure (new API key / VINs at any time; both share
-    `_async_credentials_step`), options flow (intervals, read-only)
+    `_async_credentials_step`), options flow (intervals, read-only, parking alert notify targets)
+  - `parking_alert.py` - `SkodaParkingAlert`: critical notification when a vehicle is parked but not
+    secured (`unsecured_reasons()`), one per incident after the per-vehicle grace period; reads polled
+    data only, no API requests
   - `entity.py` - `SkodaVehicleEntity` base; platforms: `sensor`, `binary_sensor`, `button`, `device_tracker`,
     `climate`, `switch`, `number`, `select`; `diagnostics.py`
   - `strings.json` is a copy of `translations/en.json`; translations exist for en/de/nl/fr/cs/sk
@@ -56,6 +59,9 @@ python -m compileall -q custom_components           # quick syntax check
   when `read_only` changes; interval changes call `coordinator.reschedule()`.
 - `vehicle_intervals: {vin: {..., auto_wake}}` also holds the automatic wake-up time in minutes (0 = off), see
   `coordinator._should_auto_wake`; `SkodaVehicle.last_captured()` is the newest `carCapturedTimestamp`.
+- `notify_targets` (list of `notify.<service>`, global) and `vehicle_intervals: {vin: {..., alert_grace}}`
+  (minutes, default 5) configure the parking alert; changing them reschedules open incidents without a
+  reload. Diagnostics redact `notify_targets`.
 - Every remote control goes through `coordinator.async_command(vin, coroutine)`.
 - Changing user-facing strings: update **all six** translation files and copy `en.json` to
   `strings.json`.

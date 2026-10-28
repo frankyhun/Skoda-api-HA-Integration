@@ -19,13 +19,13 @@ Options-Flow, Reauthentifizierung und Diagnose-Download.
 
 | Plattform | Entitäten |
 |---|---|
-| `sensor` | Batteriestand, Ladeleistung, Ladegrenze (nur lesend), Laderate, verbleibende Ladezeit, Batterie-/Gesamtreichweite, Kraftstoffstand, AdBlue-Reichweite, Kilometerstand, Zieltemperatur, Adresse der Parkposition, Name des aktuell aktiven Ladestandort-Profils, API-Status (Ergebnis der letzten Abfrage, Diagnose), Letzter Abruf (Datum und Uhrzeit des letzten erfolgreichen Abrufs, Diagnose), Letzte Fahrzeugdaten (wann das Fahrzeug selbst zuletzt Daten an die Škoda-Server gemeldet hat, Diagnose), Rate-Limit bis (wann das Anfragekontingent nach einem Rate-Limit wieder verfügbar ist, Diagnose), Verbleibende API-Anfragen (Rest des Stundenkontingents laut letzter Antwort, mit den Attributen `limit` und `reset_at`, Diagnose) |
-| `binary_sensor` | Türen, Fenster, Kofferraum, Motorhaube, Beleuchtung, Zentralverriegelung, Laden, Ladekabel angesteckt, Ladekabel-Verriegelung, Fahrzeug an gespeichertem Ladestandort |
+| `sensor` | Batteriestand, Ladeleistung, Ladegrenze (nur lesend), Laderate, verbleibende Ladezeit, Batterie-/Gesamtreichweite, Kraftstoffstand, AdBlue-Reichweite, Kilometerstand, Zieltemperatur, Adresse der Parkposition, Türen verriegelt, zuverlässiger Verriegelungsstatus und Parkstatus (wie von der API gemeldet, z. B. `YES`, `TRUNK_OPENED`, `PARKED`), Name des aktuell aktiven Ladestandort-Profils, API-Status (Ergebnis der letzten Abfrage, Diagnose), Letzter Abruf (Datum und Uhrzeit des letzten erfolgreichen Abrufs, Diagnose), Letzte Fahrzeugdaten (wann das Fahrzeug selbst zuletzt Daten an die Škoda-Server gemeldet hat, Diagnose), Rate-Limit bis (wann das Anfragekontingent nach einem Rate-Limit wieder verfügbar ist, Diagnose), Verbleibende API-Anfragen (Rest des Stundenkontingents laut letzter Antwort, mit den Attributen `limit` und `reset_at`, Diagnose) |
+| `binary_sensor` | Türen, Fenster, Kofferraum, Motorhaube, Beleuchtung, Zentralverriegelung, Laden, Ladekabel angesteckt, Ladekabel-Verriegelung, Fahrzeug an gespeichertem Ladestandort, Geparkt, nicht gesichert (siehe [Parkalarm](#parkalarm)) |
 | `device_tracker` | Parkposition (erscheint auf dem Karten-Dashboard; während der Fahrt unbekannt) |
 | `climate` | Standklimatisierung (an/aus, aktive Belüftung, Zieltemperatur) |
 | `switch` | Laden starten/stoppen |
 | `button` | API jetzt abrufen (ruft die MyŠkoda-API für das Fahrzeug sofort ab; kostet eine Anfrage des API-Kontingents und wird bei aktivem Rate-Limit abgelehnt), Fahrzeug aufwecken (siehe unten) |
-| `number` | Ladelimit (Ziel-Ladezustand), Abfrageintervalle pro Fahrzeug (normal / beim Laden), automatisches Wecken eines ladenden Fahrzeugs |
+| `number` | Ladelimit (Ziel-Ladezustand), Abfrageintervalle pro Fahrzeug (normal / beim Laden), automatisches Wecken eines ladenden Fahrzeugs, Parkalarm-Wartezeit |
 | `select` | Lademodus |
 
 Sensoren und Steuerungen werden nur für die Daten und Fernbedienungen angelegt, die dein
@@ -99,7 +99,8 @@ oder du eine Vorabversion testen möchtest), füge sie stattdessen als benutzerd
    - das Abfrageintervall (3–1440 Minuten, Standard 10),
    - das kürzere Intervall **während des Ladens** (Standard 5),
    - ob dieses Ladeintervall **auch bei eingestecktem Ladekabel** gilt (Standard aus),
-   - den Nur-Lese-Modus.
+   - den Nur-Lese-Modus,
+   - die Benachrichtigungsdienste, die den [Parkalarm](#parkalarm) erhalten.
 
 Den API-Schlüssel (oder die VINs) kannst du jederzeit ersetzen – vor dem Ablauf oder nachdem du einen
 neuen erstellt hast – unter **Einstellungen → Geräte & Dienste → Škoda API Connect → ⋮ → Neu konfigurieren**.
@@ -145,6 +146,44 @@ aktualisiert und schaltet sofort um.
 
 Der Schalter **Wenn eingesteckt schnell abfragen** (Kategorie Konfiguration) macht dasselbe pro
 Fahrzeug und überschreibt für dieses Fahrzeug die globale Option.
+
+### Parkalarm
+
+Die Integration kann eine kritische Benachrichtigung senden, wenn ein Fahrzeug geparkt ist
+(`parkingPosition.state` ist `PARKED`), aber eine dieser Bedingungen zutrifft:
+
+- Zuverlässiger Verriegelungsstatus ist nicht `LOCKED`
+- Türen ist nicht `CLOSED`
+- Türen verriegelt ist nicht `YES`
+- Verriegelt ist nicht `YES`
+- Fenster ist nicht `CLOSED` (entfällt, wenn die API `UNSUPPORTED` meldet, also keine elektrischen Fensterheber)
+
+Ein als `UNKNOWN` gemeldeter oder in der Antwort fehlender Wert gilt ebenfalls als nicht gesichert.
+
+Zum Einschalten öffnest du **Konfigurieren** und wählst einen oder mehrere **Empfänger des
+Parkalarms**, zum Beispiel `notify.mobile_app_mein_telefon`. Die Liste bietet deine vorhandenen
+Benachrichtigungsdienste an; du kannst auch einen Namen eintippen. Leer lassen für keine Alarme. Die
+Empfänger gelten für alle Fahrzeuge des Eintrags.
+
+Die Zahl **Parkalarm-Wartezeit** jedes Fahrzeugs (ein Regler von 0 bis 30 Minuten, Standard 5,
+Kategorie Konfiguration) legt fest, wie lange das Fahrzeug ungesichert bleiben darf, bevor der Alarm
+gesendet wird; bei 0 sofort. Die Zeit läuft ab der ersten Abfrage, die das Problem zeigt, und der
+Alarm wird nur gesendet, wenn die letzte Abfrage es noch zeigt. Der Zustand ist nur bei jeder Abfrage
+bekannt, daher kann der Alarm bis zu ein Abfrageintervall später kommen, als die Wartezeit allein
+vermuten lässt. Vor einem Neustart zwischengespeicherte Daten lösen nie einen Alarm aus; das
+Fahrzeug muss erst abgefragt werden.
+
+Pro Vorfall wird ein Alarm gesendet. Sobald eine Abfrage das Fahrzeug gesichert (oder nicht mehr
+geparkt) zeigt, beginnt das nächste Problem einen neuen Vorfall. Der Binärsensor **Geparkt, nicht
+gesichert** zeigt dieselbe Bedingung, mit den fehlgeschlagenen Prüfungen im Attribut `reasons`, für
+Dashboards und eigene Automationen.
+
+An Companion-App-Empfänger (`notify.mobile_app_*`) wird der Alarm als kritisch gesendet: unter iOS
+ertönt er auch im Lautlos- und Fokus-Modus, unter Android nutzt er den Alarm-Kanal. Andere
+Benachrichtigungsdienste erhalten eine normale Nachricht. Der Text der Benachrichtigung ist englisch.
+
+Der Alarm liest nur Daten, die die Abfragen ohnehin geholt haben, und kostet daher keine Anfragen des
+API-Kontingents.
 
 ### Ratenlimit
 

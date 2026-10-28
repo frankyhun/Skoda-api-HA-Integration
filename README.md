@@ -18,13 +18,13 @@ an options flow, reauthentication support, and a diagnostics download.
 
 | Platform | Entities |
 |---|---|
-| `sensor` | Battery level, charging power, charge limit (read-only), charging rate, remaining charging time, battery/total range, fuel level, AdBlue range, mileage, target temperature, address of the parking position, name of the charging location profile currently active, API status (result of the last poll, diagnostic), last poll (date and time of the last successful poll, diagnostic), last vehicle data (when the vehicle itself last reported data to the Škoda servers, diagnostic), rate limit until (when the request quota is available again after a rate limit, diagnostic), API requests remaining (left of the hourly quota according to the last response, with the attributes `limit` and `reset_at`, diagnostic) |
-| `binary_sensor` | Doors, windows, trunk, bonnet, lights, central locking, charging, charging cable plugged in, charging cable lock, vehicle at saved charging location |
+| `sensor` | Battery level, charging power, charge limit (read-only), charging rate, remaining charging time, battery/total range, fuel level, AdBlue range, mileage, target temperature, address of the parking position, doors locked, reliable lock status and parking state (as reported by the API, e.g. `YES`, `TRUNK_OPENED`, `PARKED`), name of the charging location profile currently active, API status (result of the last poll, diagnostic), last poll (date and time of the last successful poll, diagnostic), last vehicle data (when the vehicle itself last reported data to the Škoda servers, diagnostic), rate limit until (when the request quota is available again after a rate limit, diagnostic), API requests remaining (left of the hourly quota according to the last response, with the attributes `limit` and `reset_at`, diagnostic) |
+| `binary_sensor` | Doors, windows, trunk, bonnet, lights, central locking, charging, charging cable plugged in, charging cable lock, vehicle at saved charging location, parked unsecured (see [Parking alert](#parking-alert)) |
 | `device_tracker` | Parking position (shows on the Map dashboard; unknown while driving) |
 | `climate` | Remote air conditioning (on/off, active ventilation, target temperature) |
 | `switch` | Start/stop charging |
 | `button` | Poll API now (queries the MyŠkoda API for the vehicle immediately; costs one request of the API quota and is refused while the API is rate limited), Wake vehicle (see below) |
-| `number` | Charge limit (target state of charge), per-vehicle polling intervals (normal / while charging), automatic wake-up of a charging vehicle |
+| `number` | Charge limit (target state of charge), per-vehicle polling intervals (normal / while charging), automatic wake-up of a charging vehicle, parking alert grace period |
 | `select` | Charge mode |
 
 Sensors and controls are only created for the data and remote operations your specific vehicle
@@ -97,7 +97,8 @@ want to try a pre-release), add it as a custom repository instead:
    - the polling interval (3-1440 minutes, default 10),
    - the shorter polling interval used **while charging** (default 5),
    - whether that charging interval is **also used while the cable is plugged in** (default off),
-   - read-only mode.
+   - read-only mode,
+   - the notify services that get the [parking alert](#parking-alert).
 
 You can replace the API key (or change the VINs) at any time - before it expires, or after creating a
 new one - via **Settings → Devices & Services → Škoda API Connect → ⋮ → Reconfigure**. The entry is reloaded
@@ -141,6 +142,40 @@ right away.
 
 The switch **Fast polling while plugged in** (configuration category) does the same per vehicle:
 it overrides the global option for that vehicle.
+
+### Parking alert
+
+The integration can send a critical notification when a vehicle is parked
+(`parkingPosition.state` is `PARKED`) but any of these is true:
+
+- Reliable lock status is not `LOCKED`
+- Doors is not `CLOSED`
+- Doors locked is not `YES`
+- Locked is not `YES`
+- Windows is not `CLOSED` (skipped when the API reports `UNSUPPORTED`, i.e. no electric windows)
+
+A value reported as `UNKNOWN`, or missing from the response, also counts as not secured.
+
+To turn it on, open **Configure** and pick one or more **Parking alert notification targets**, for
+example `notify.mobile_app_my_phone`. The list offers your existing notify services; you can also
+type a name. Leave it empty for no alerts. The targets apply to all vehicles of the entry.
+
+The **Parking alert grace period** number of each vehicle (a slider from 0 to 30 minutes, default 5,
+configuration category) sets how long the vehicle may stay unsecured before the alert goes out; 0
+sends it at once. The clock starts at the first poll that shows the problem, and the alert is only
+sent if the latest poll still shows it. The state is only known at each poll, so the alert can come
+up to one polling interval later than the grace period alone suggests. Data cached from before a
+restart never triggers an alert; the vehicle has to be polled first.
+
+One alert is sent per incident. Once a poll shows the vehicle secured (or no longer parked), the
+next problem starts a new incident. The binary sensor **Parked unsecured** shows the same condition,
+with the failing checks in its `reasons` attribute, for dashboards and your own automations.
+
+For Companion app targets (`notify.mobile_app_*`) the alert is sent as critical: on iOS it plays
+even in silent mode and Focus, and on Android it uses the alarm stream. Other notify services get a
+normal message. The notification text is in English.
+
+The alert only reads data the polls already fetched, so it costs no requests of the API quota.
 
 ### Rate limits
 

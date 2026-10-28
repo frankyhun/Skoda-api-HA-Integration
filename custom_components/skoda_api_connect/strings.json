@@ -47,9 +47,16 @@
           "scan_interval": "Polling interval (minutes)",
           "charging_scan_interval": "Polling interval while charging (minutes)",
           "plugged_in_fast_polling": "Use the charging interval while the cable is plugged in",
-          "read_only": "Read-only mode (disable all remote controls)"
+          "read_only": "Read-only mode (disable all remote controls)",
+          "notify_targets": "Parking alert notification targets"
+        },
+        "data_description": {
+          "notify_targets": "Notify services that get a critical alert when a vehicle is parked but not locked and closed, e.g. notify.mobile_app_my_phone. Leave empty for no alerts. The delay is set per vehicle with the \"Parking alert grace period\" slider."
         }
       }
+    },
+    "error": {
+      "unknown_notify_target": "There is no notify service called {target}."
     }
   },
   "entity": {
@@ -89,6 +96,15 @@
       },
       "location_address": {
         "name": "Address"
+      },
+      "doors_locked": {
+        "name": "Doors locked"
+      },
+      "reliable_lock_status": {
+        "name": "Reliable lock status"
+      },
+      "parking_state": {
+        "name": "Parking state"
       },
       "charging_location_profile": {
         "name": "Charging location"
@@ -147,6 +163,14 @@
       },
       "unlocked": {
         "name": "Central locking"
+      },
+      "parked_unsecured": {
+        "name": "Parked unsecured",
+        "state_attributes": {
+          "reasons": {
+            "name": "Reasons"
+          }
+        }
       }
     },
     "button": {
@@ -187,6 +211,9 @@
       },
       "auto_wake": {
         "name": "Wake charging vehicle after (0 = off)"
+      },
+      "parking_alert_grace": {
+        "name": "Parking alert grace period"
       }
     },
     "select": {

@@ -7,7 +7,7 @@ from typing import Any
 from homeassistant.components.diagnostics import REDACTED, async_redact_data
 from homeassistant.core import HomeAssistant
 
-from .const import CONF_API_KEY, CONF_VEHICLE_INTERVALS, CONF_VINS
+from .const import CONF_API_KEY, CONF_NOTIFY_TARGETS, CONF_VEHICLE_INTERVALS, CONF_VINS
 from .coordinator import SkodaConfigEntry
 
 TO_REDACT = {
@@ -24,6 +24,9 @@ TO_REDACT = {
 def _redact_options(options: dict[str, Any], aliases: dict[str, str]) -> dict[str, Any]:
     """Return the options with the VIN keys of the per-vehicle overrides replaced."""
     redacted = dict(options)
+    # Notify service names usually contain a person's or phone's name.
+    if redacted.get(CONF_NOTIFY_TARGETS):
+        redacted[CONF_NOTIFY_TARGETS] = REDACTED
     intervals = redacted.get(CONF_VEHICLE_INTERVALS)
     if isinstance(intervals, dict):
         redacted[CONF_VEHICLE_INTERVALS] = {
