@@ -58,6 +58,10 @@ MAX_RATE_LIMIT_BACKOFF = timedelta(hours=1)
 DUE_TOLERANCE_SECONDS = 10
 
 
+# airConditioning.state / activeVentilation.state values while the climate runs.
+CLIMATE_ACTIVE_STATES = ("COOLING", "HEATING", "HEATING_AUXILIARY", "VENTILATION")
+VENTILATION_ACTIVE_STATES = ("VENTILATION", "PREHEATING")
+
 STATUS_OK = "ok"
 STATUS_PARTIAL = "partial"
 STATUS_AUTH_ERROR = "auth_error"
@@ -208,9 +212,24 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         state = vehicle.get("charging", "status", "state")
         return state is not None and state != "CONNECT_CABLE"
 
+    def is_climate_active(self, vin: str) -> bool:
+        """Return whether the last known state says the air conditioning or ventilation runs."""
+        vehicle = self.data.vehicles.get(vin) if self.data else None
+        if vehicle is None:
+            return False
+        return (
+            vehicle.get("airConditioning", "state") in CLIMATE_ACTIVE_STATES
+            or vehicle.get("activeVentilation", "state") in VENTILATION_ACTIVE_STATES
+        )
+
     def uses_charging_interval(self, vin: str) -> bool:
-        """Return whether the vehicle is polled at its (shorter) charging interval."""
-        if self.is_charging(vin):
+        """Return whether the vehicle is polled at its (shorter) charging interval.
+
+        That is while it charges, while the air conditioning or ventilation runs (so that
+        switching it off elsewhere, e.g. in the app, shows up sooner) and, optionally,
+        while the cable is plugged in.
+        """
+        if self.is_charging(vin) or self.is_climate_active(vin):
             return True
         return self.plugged_in_fast_polling(vin) and self.is_plugged_in(vin)
 

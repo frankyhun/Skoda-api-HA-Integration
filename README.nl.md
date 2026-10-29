@@ -18,7 +18,7 @@ externe client-bibliotheek.
 | `sensor` | Accuniveau, laadvermogen, laadlimiet (alleen lezen), laadsnelheid, resterende laadtijd, accu-/totaalbereik, brandstofniveau, AdBlue-bereik, kilometerstand, doeltemperatuur, adres van de parkeerpositie, deuren vergrendeld, betrouwbare vergrendelingsstatus en parkeerstatus (zoals de API ze meldt, bijv. `YES`, `TRUNK_OPENED`, `PARKED`), naam van het actieve laadlocatieprofiel, API-status (resultaat van de laatste poll, diagnostisch), laatste API-poll (datum en tijd van de laatste geslaagde poll, diagnostisch), huidig pollinginterval (minuten, normaal of laadinterval, attribuut `mode`, diagnostisch), laatste voertuiggegevens (wanneer het voertuig zelf voor het laatst gegevens naar de Škoda-servers stuurde, diagnostisch) |
 | `binary_sensor` | Deuren, ramen, kofferbak, motorkap, verlichting, centrale vergrendeling, laden, laadkabel aangesloten, vergrendeling laadkabel, voertuig op opgeslagen laadlocatie, geparkeerd, niet beveiligd (zie [Parkeeralarm](#parkeeralarm)) |
 | `device_tracker` | Parkeerpositie (zichtbaar op de kaart; onbekend tijdens het rijden) |
-| `climate` | Airco op afstand (aan/uit, actieve ventilatie, doeltemperatuur) |
+| `climate` | Airco op afstand (aan/uit, actieve ventilatie als het voertuig die ondersteunt, doeltemperatuur) |
 | `switch` | Laden starten/stoppen |
 | `button` | API nu opvragen (vraagt de MyŠkoda-API direct op voor het voertuig; kost één verzoek van het API-quotum en wordt geweigerd tijdens een rate limit), Voertuig wakker maken (zie hieronder) |
 | `number` | Laadlimiet (doel-laadniveau), pollinginterval per voertuig (normaal / tijdens laden), automatisch wekken van een ladend voertuig, wachttijd parkeeralarm |
@@ -134,7 +134,7 @@ minder dan 6 verzoeken over zijn. Beide zijn niet beschikbaar in de alleen-lezen
 Elk voertuig heeft twee `number`-entiteiten (configuratie): **Pollinginterval** en **Pollinginterval
 tijdens laden**. Ze overschrijven de standaardwaarden uit de opties, werken direct zonder herladen
 en zijn via automatiseringen in te stellen (`number.set_value`). Zodra de laatst opgehaalde status
-`CHARGING` is (of, met de optie "Laadinterval ook gebruiken zolang de laadkabel is aangesloten", zodra de kabel
+`CHARGING` is, of de airco of ventilatie draait (zodat uitschakelen elders eerder zichtbaar wordt) (of, met de optie "Laadinterval ook gebruiken zolang de laadkabel is aangesloten", zodra de kabel
 is aangesloten) wordt het laadinterval gebruikt; na het starten van het laden kan het dus tot één
 normaal interval duren voordat het sneller pollen begint (laden starten via Home Assistant ververst
 na 30 seconden meteen).
