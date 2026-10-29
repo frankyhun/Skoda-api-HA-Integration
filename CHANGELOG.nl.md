@@ -7,6 +7,10 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+### Toegevoegd
+
+- `brand/icon@2x.png` (512 x 512) naast `brand/icon.png`, de versie met hoge resolutie die Home Assistant op high-DPI-schermen gebruikt.
+
 ## [0.4.2]
 
 ### Opgelost

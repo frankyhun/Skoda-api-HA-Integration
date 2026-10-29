@@ -7,6 +7,10 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `brand/icon@2x.png` (512 x 512) next to `brand/icon.png`, the high-resolution version Home Assistant uses on high-DPI screens.
+
 ## [0.4.2]
 
 ### Fixed
