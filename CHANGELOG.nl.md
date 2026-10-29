@@ -7,6 +7,10 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+### Gewijzigd
+
+- De laadmodus-selectie gebruikt het pictogram `mdi:ev-plug-ccs2` (CCS) in plaats van `mdi:ev-plug-type2`.
+
 ## [0.4.3]
 
 ### Toegevoegd
