@@ -7,6 +7,10 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- The charge mode select uses the icon `mdi:ev-plug-ccs2` (CCS) instead of `mdi:ev-plug-type2`.
+
 ## [0.4.3]
 
 ### Added
