@@ -52,7 +52,6 @@ class SkodaClimate(SkodaVehicleEntity, ClimateEntity):
     _attr_translation_key = "air_conditioning"
     _expected_key = "hvac_mode"
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
-    _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT_COOL, HVACMode.FAN_ONLY]
     _attr_supported_features = (
         ClimateEntityFeature.TARGET_TEMPERATURE
         | ClimateEntityFeature.TURN_OFF
@@ -71,6 +70,14 @@ class SkodaClimate(SkodaVehicleEntity, ClimateEntity):
         # Target temperature reported by the vehicle when the request was made; a different
         # value later means it was changed elsewhere (e.g. in the app) and wins.
         self._requested_from: float | None = None
+
+    @property
+    def hvac_modes(self) -> list[HVACMode]:
+        """Return the modes the vehicle offers: ventilation only if it supports it."""
+        modes = [HVACMode.OFF, HVACMode.HEAT_COOL]
+        if self.vehicle.supports("startActiveVentilation"):
+            modes.append(HVACMode.FAN_ONLY)
+        return modes
 
     def _handle_coordinator_update(self) -> None:
         """Drop the requested temperature once the vehicle reports a different target."""

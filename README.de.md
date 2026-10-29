@@ -22,7 +22,7 @@ Options-Flow, Reauthentifizierung und Diagnose-Download.
 | `sensor` | Batteriestand, Ladeleistung, Ladegrenze (nur lesend), Laderate, verbleibende Ladezeit, Batterie-/Gesamtreichweite, Kraftstoffstand, AdBlue-Reichweite, Kilometerstand, Zieltemperatur, Adresse der Parkposition, Türen verriegelt, zuverlässiger Verriegelungsstatus und Parkstatus (wie von der API gemeldet, z. B. `YES`, `TRUNK_OPENED`, `PARKED`), Name des aktuell aktiven Ladestandort-Profils, API-Status (Ergebnis der letzten Abfrage, Diagnose), Letzter API-Abruf (Datum und Uhrzeit des letzten erfolgreichen Abrufs, Diagnose), Letzte Fahrzeugdaten (wann das Fahrzeug selbst zuletzt Daten an die Škoda-Server gemeldet hat, Diagnose), API-Rate-Limit bis (wann das Anfragekontingent nach einem Rate-Limit wieder verfügbar ist, Diagnose), Verbleibende API-Anfragen (Rest des Stundenkontingents laut letzter Antwort, mit den Attributen `limit` und `reset_at`, Diagnose), Aktuelles Abrufintervall (Minuten, normales oder Ladeintervall, Attribut `mode`, Diagnose) |
 | `binary_sensor` | Türen, Fenster, Kofferraum, Motorhaube, Beleuchtung, Zentralverriegelung, Laden, Ladekabel angesteckt, Ladekabel-Verriegelung, Fahrzeug an gespeichertem Ladestandort, Geparkt, nicht gesichert (siehe [Parkalarm](#parkalarm)) |
 | `device_tracker` | Parkposition (erscheint auf dem Karten-Dashboard; während der Fahrt unbekannt) |
-| `climate` | Standklimatisierung (an/aus, aktive Belüftung, Zieltemperatur) |
+| `climate` | Standklimatisierung (an/aus, aktive Belüftung wenn das Fahrzeug sie unterstützt, Zieltemperatur) |
 | `switch` | Laden starten/stoppen |
 | `button` | API jetzt abrufen (ruft die MyŠkoda-API für das Fahrzeug sofort ab; kostet eine Anfrage des API-Kontingents und wird bei aktivem Rate-Limit abgelehnt), Fahrzeug aufwecken (siehe unten) |
 | `number` | Ladelimit (Ziel-Ladezustand), Abfrageintervalle pro Fahrzeug (normal / beim Laden), automatisches Wecken eines ladenden Fahrzeugs, Parkalarm-Wartezeit |
@@ -150,7 +150,7 @@ Jedes Fahrzeug hat zwei `number`-Entitäten (Kategorie Konfiguration): **Abfrage
 **Abfrageintervall beim Laden**. Sie überschreiben für dieses Fahrzeug die Standardwerte aus den
 Integrationsoptionen, gelten sofort ohne Neuladen und lassen sich aus Automationen setzen
 (`number.set_value`). Ein Fahrzeug wird mit seinem Ladeintervall abgefragt, sobald der zuletzt
-abgerufene Zustand `CHARGING` ist. Mit der Option „Ladeintervall auch bei eingestecktem Ladekabel
+abgerufene Zustand `CHARGING` ist oder die Klimaanlage bzw. Lüftung läuft (damit ein Ausschalten an anderer Stelle früher sichtbar wird). Mit der Option „Ladeintervall auch bei eingestecktem Ladekabel
 verwenden“ gilt es auch, sobald das Ladekabel eingesteckt ist – praktisch, um den Beginn eines
 zeitgesteuerten Ladevorgangs zu erfassen, das schnellere Intervall bleibt dann aber aktiv, solange das Auto
 angesteckt ist. Nach dem Start eines Ladevorgangs kann es bis zu ein normales Intervall dauern, bis das

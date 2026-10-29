@@ -7,6 +7,16 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.4.3]
+
+### Added
+
+- While the air conditioning or the ventilation runs, the vehicle is polled at its charging interval (like while charging). Switching it off elsewhere, for example in the app, then shows up sooner. It goes back to the normal interval once a poll shows the climate off.
+
+### Fixed
+
+- The air conditioning offered the ventilation mode (`fan_only`) for every vehicle, so choosing it on a vehicle without active ventilation (such as an Enyaq) ended in an error from the API. The mode is now only offered when the vehicle lists `startActiveVentilation` among its operations.
+
 ### Added
 
 - `brand/icon@2x.png` (512 x 512) next to `brand/icon.png`, the high-resolution version Home Assistant uses on high-DPI screens.

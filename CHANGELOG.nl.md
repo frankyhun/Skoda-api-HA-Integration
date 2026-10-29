@@ -7,6 +7,16 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+## [0.4.3]
+
+### Toegevoegd
+
+- Zolang de airco of de ventilatie draait, wordt het voertuig met zijn laadinterval gepolld (zoals tijdens het laden). Uitschakelen elders, bijvoorbeeld in de app, wordt zo eerder zichtbaar. Zodra een poll de klimaatregeling uit toont, geldt weer het normale interval.
+
+### Opgelost
+
+- De airco bood de ventilatiemodus (`fan_only`) voor elk voertuig aan, zodat kiezen op een voertuig zonder actieve ventilatie (zoals een Enyaq) met een fout van de API eindigde. De modus wordt nu alleen aangeboden als het voertuig `startActiveVentilation` bij zijn operaties vermeldt.
+
 ### Toegevoegd
 
 - `brand/icon@2x.png` (512 x 512) naast `brand/icon.png`, de versie met hoge resolutie die Home Assistant op high-DPI-schermen gebruikt.

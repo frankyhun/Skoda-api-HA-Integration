@@ -21,7 +21,7 @@ an options flow, reauthentication support, and a diagnostics download.
 | `sensor` | Battery level, charging power, charge limit (read-only), charging rate, remaining charging time, battery/total range, fuel level, AdBlue range, mileage, target temperature, address of the parking position, doors locked, reliable lock status and parking state (as reported by the API, e.g. `YES`, `TRUNK_OPENED`, `PARKED`), name of the charging location profile currently active, API status (result of the last poll, diagnostic), last API poll (date and time of the last successful poll, diagnostic), last vehicle data (when the vehicle itself last reported data to the Škoda servers, diagnostic), API rate limit until (when the request quota is available again after a rate limit, diagnostic), API requests remaining (left of the hourly quota according to the last response, with the attributes `limit` and `reset_at`, diagnostic), current polling interval (minutes, normal or charging interval, attribute `mode`, diagnostic) |
 | `binary_sensor` | Doors, windows, trunk, bonnet, lights, central locking, charging, charging cable plugged in, charging cable lock, vehicle at saved charging location, parked unsecured (see [Parking alert](#parking-alert)) |
 | `device_tracker` | Parking position (shows on the Map dashboard; unknown while driving) |
-| `climate` | Remote air conditioning (on/off, active ventilation, target temperature) |
+| `climate` | Remote air conditioning (on/off, active ventilation if the vehicle supports it, target temperature) |
 | `switch` | Start/stop charging |
 | `button` | Poll API now (queries the MyŠkoda API for the vehicle immediately; costs one request of the API quota and is refused while the API is rate limited), Wake vehicle (see below) |
 | `number` | Charge limit (target state of charge), per-vehicle polling intervals (normal / while charging), automatic wake-up of a charging vehicle, parking alert grace period |
@@ -145,7 +145,7 @@ Every vehicle has two `number` entities (configuration category): **Polling inte
 **Polling interval while charging**. They override the defaults from the integration options for
 that vehicle, apply immediately without reloading, and can be set from automations
 (`number.set_value`). A vehicle is polled at its charging interval as soon as the last fetched
-state is `CHARGING`. With the option "Use the charging interval while the cable is plugged in" it
+state is `CHARGING`, or the air conditioning or ventilation is running (so that switching it off elsewhere shows up sooner). With the option "Use the charging interval while the cable is plugged in" it
 is also used as soon as the charging cable is plugged in - useful to catch the start of a
 timer-controlled charge, but the faster interval then stays active for as long as the car remains
 plugged in. After a charge starts it can take up to one normal interval until the faster polling kicks
