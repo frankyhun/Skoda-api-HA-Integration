@@ -7,6 +7,12 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+## [0.4.2]
+
+### Opgelost
+
+- Parkeeralarm werd nooit verstuurd voor een net geparkeerd voertuig: het meldt zich één keer en slaapt dan, en die melding was ouder dan de poll die het incident opende, dus de melding bleef wachten op een nieuwere (en het wekken wordt vaak overgeslagen, bijv. als het pollen het grootste deel van het quotum gebruikt). Meldde het voertuig het probleem binnen één pollinginterval vóór die poll, dan begint het incident nu bij die melding, wordt het alarm daarop verstuurd en telt de wachttijd vanaf die melding. Oudere meldingen wekken het voertuig nog steeds eerst.
+
 ## [0.4.1]
 
 ### Gewijzigd

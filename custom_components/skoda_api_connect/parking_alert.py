@@ -89,10 +89,15 @@ class SkodaParkingAlert:
     start nor end an incident. Incidents are stored, so a restart or reload does not
     send the alert again.
 
-    The alert is only sent on data the vehicle reported after the incident began: an
-    older snapshot may miss that the vehicle was secured without reporting it. If there
-    is no such report when the grace period ends, the vehicle is woken once (two
-    requests), and the alert waits for the report that follows.
+    If the vehicle reported the problem within one polling interval before that poll
+    (it parked since the previous poll), the incident begins at that report instead.
+    The vehicle usually sleeps right after parking and reports nothing newer, so this
+    report is as current as the data gets.
+
+    The alert is only sent on data the vehicle reported when or after the incident
+    began: an older snapshot may miss that the vehicle was secured without reporting
+    it. If there is no such report when the grace period ends, the vehicle is woken
+    once (two requests), and the alert waits for the report that follows.
     """
 
     def __init__(
@@ -164,13 +169,25 @@ class SkodaParkingAlert:
                     self._async_save()
                 continue
             if incident is None:
-                self._incidents[vin] = _Incident(since=dt_util.utcnow())
+                self._incidents[vin] = _Incident(since=self._incident_start(vin, vehicle))
                 self._async_save()
                 self._async_schedule(vin)
             elif not incident.notified and incident.cancel_timer is None:
                 # Restored after a restart, or still waiting for notification targets
                 # or a fresh report.
                 self._async_schedule(vin)
+
+    def _incident_start(self, vin: str, vehicle: SkodaVehicle) -> datetime:
+        """Return when a new incident began: the report showing it, if it is recent."""
+        now = dt_util.utcnow()
+        reported = vehicle.captured("status")
+        coordinator = self._coordinator
+        interval = timedelta(
+            minutes=coordinator.interval_minutes(vin, coordinator.active_interval_kind(vin))
+        )
+        if reported is not None and now - interval <= reported <= now:
+            return reported
+        return now
 
     async def _async_options_updated(
         self, hass: HomeAssistant, entry: SkodaConfigEntry
@@ -218,7 +235,7 @@ class SkodaParkingAlert:
             # targets added later still get notified.
             return
         captured = vehicle.captured("status")
-        if captured is None or captured <= incident.since:
+        if captured is None or captured < incident.since:
             # The vehicle may have been secured since without reporting it. Wait for a
             # newer report; every later poll checks again.
             self._async_wake_once(vin, incident)

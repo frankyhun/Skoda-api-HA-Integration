@@ -182,7 +182,8 @@ Empfänger gelten für alle Fahrzeuge des Eintrags.
 
 Die Zahl **Parkalarm-Wartezeit** jedes Fahrzeugs (ein Regler von 0 bis 30 Minuten, Standard 5,
 Kategorie Konfiguration) legt fest, wie lange das Fahrzeug ungesichert bleiben darf, bevor der Alarm
-gesendet wird; bei 0 sofort. Die Zeit läuft ab der ersten Abfrage, die das Problem zeigt, und der
+gesendet wird; bei 0 sofort. Die Zeit läuft ab der ersten Abfrage, die das Problem zeigt, oder ab der
+Meldung des Fahrzeugs selbst, wenn diese seit der vorigen Abfrage (innerhalb eines Abfrageintervalls) kam, und der
 Alarm wird nur gesendet, wenn die letzte Abfrage es noch zeigt. Der Zustand ist nur bei jeder Abfrage
 bekannt, daher kann der Alarm bis zu ein Abfrageintervall später kommen, als die Wartezeit allein
 vermuten lässt. Vor einem Neustart zwischengespeicherte Daten lösen nie einen Alarm aus; das
@@ -201,8 +202,9 @@ benachrichtigt, und ein fehlerhafter hält die anderen nicht auf. Der Text der B
 
 Ein Fahrzeug kann sich lange nicht bei den Škoda-Servern melden, und eine Abfrage liefert dann
 seine letzte Meldung, egal wie alt. Daher wird der Alarm nur auf Daten gesendet, die das Fahrzeug
-nach Beginn des Vorfalls gemeldet hat (der `carCapturedTimestamp` des Status); eine ältere Meldung
-weiß womöglich nicht, dass das Auto inzwischen verriegelt wurde. Liegt beim Ende der Wartezeit keine
+bei oder nach Beginn des Vorfalls gemeldet hat (der `carCapturedTimestamp` des Status); eine ältere Meldung
+weiß womöglich nicht, dass das Auto inzwischen verriegelt wurde. Ein gerade geparktes Fahrzeug meldet
+sich meist einmal und schläft dann; da diese Meldung den Vorfall beginnt, reicht sie für den Alarm. Liegt beim Ende der Wartezeit keine
 solche Meldung vor, weckt die Integration das Fahrzeug einmal pro Vorfall, genauso wie der
 Button **Fahrzeug aufwecken** (zwei Anfragen des Kontingents), und entscheidet anhand der
 folgenden Meldung. Das Aufwecken entfällt im Nur-Lesen-Modus, während einer Ratenlimit-Pause, wenn
